@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Nuevo Despacho — Metabisulfito</title>
+  <link rel="stylesheet" href="../assets/styles.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">📋</div>
+  <div>
+    <div class="header-title">Nuevo Despacho</div>
+    <div class="header-sub" id="h-user">—</div>
+  </div>
+  <div class="header-right">
+    <a href="../index.html" class="back-link" style="color:var(--muted);font-size:20px;text-decoration:none">⌂</a>
+    <button class="btn-exit" onclick="doLogout()">Salir</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="top-bar">
+    <div>
+      <div class="page-title">Nuevo Despacho</div>
+      <div class="page-sub">Registro de salida de metabisulfito</div>
+    </div>
+    <div class="num-badge">N° <span id="next-num">00001</span></div>
+  </div>
+
+  <!-- TRANSPORTISTA -->
+  <div class="card">
+    <div class="card-title">🚛 Transportista</div>
+    <div class="fgrid">
+      <div class="field" style="grid-column:1/-1">
+        <label>Conductor ★</label>
+        <select id="f-conductor" onchange="autoPlaca(this.value)">
+          <option value="">— Seleccionar conductor —</option>
+          <option value="ARGUELLO SOLORZANO PEDRO ANIBAL" data-placa="PCD9219">ARGUELLO SOLORZANO PEDRO ANIBAL — PCD9219</option>
+          <option value="ALBAN VALAREZO MANUEL JOSELITO"    data-placa="OBA3449">ALBAN VALAREZO MANUEL JOSELITO — OBA3449</option>
+          <option value="RODRIGUEZ PARDO VICENTE ROBERTO"   data-placa="GQZ0299">RODRIGUEZ PARDO VICENTE ROBERTO — GQZ0299</option>
+          <option value="SANMARTIN QUEZADA JOSE LUIS"       data-placa="TCM0261">SANMARTIN QUEZADA JOSE LUIS — TCM0261</option>
+          <option value="RODRIGUEZ AYALA FREDDY HERNEY"     data-placa="OAA1854">RODRIGUEZ AYALA FREDDY HERNEY — OAA1854</option>
+          <option value="JIMENEZ CHAMBA SANTOS GABRIEL"     data-placa="PIA0438">JIMENEZ CHAMBA SANTOS GABRIEL — PIA0438</option>
+          <option value="SOTO CHIMBO JOSE JOEL"             data-placa="XBW0304">SOTO CHIMBO JOSE JOEL — XBW0304</option>
+          <option value="ULLOA CABRERA KEVIN JONATHAN"      data-placa="LCH0740">ULLOA CABRERA KEVIN JONATHAN — LCH0740</option>
+          <option value="GANCHOZO VELEZ PEDRO LEONARDO"     data-placa="OAA4374">GANCHOZO VELEZ PEDRO LEONARDO — OAA4374</option>
+          <option value="RODRIGUEZ TORRES FREDY HERNEY"     data-placa="GSG7573">RODRIGUEZ TORRES FREDY HERNEY — GSG7573</option>
+          <option value="MERA VALENCIA RAMON BENIGNO"       data-placa="AFZ0931">MERA VALENCIA RAMON BENIGNO — AFZ0931</option>
+          <option value="VALAREZO CUEVA REMIGIO DE JESUS"   data-placa="GBO8135">VALAREZO CUEVA REMIGIO DE JESUS — GBO8135</option>
+          <option value="OTRO" data-placa="">OTRO (ingresar manualmente)</option>
+        </select>
+      </div>
+      <div class="field field-auto">
+        <label>Placa del Vehículo</label>
+        <input id="f-placa" type="text" placeholder="Auto" readonly/>
+      </div>
+      <div class="field" id="f-cond-manual-wrap" style="display:none">
+        <label>Nombre conductor (otro)</label>
+        <input id="f-conductor-manual" type="text" placeholder="Nombre completo"/>
+      </div>
+      <div class="field"><label>Fecha Inicio</label><input id="f-fechaInicio" type="date"/></div>
+      <div class="field"><label>Hora de Salida</label><input id="f-horaSalida" type="time"/></div>
+      <div class="field"><label>Punto de Partida</label><input id="f-puntoPartida" type="text" placeholder="Bodega Sta. Rosa"/></div>
+      <div class="field"><label>Fecha Fin</label><input id="f-fechaFin" type="date"/></div>
+      <div class="field"><label>Hora de Llegada</label><input id="f-horaLlegada" type="time"/></div>
+      <div class="field"><label>Punto de Llegada</label><input id="f-puntoLlegada" type="text"/></div>
+      <div class="field"><label>Ruta</label><input id="f-ruta" type="text"/></div>
+      <div class="field"><label>Guía MDI</label><input id="f-guiaMdi" type="text"/></div>
+      <div class="field"><label>Lugar de Pesca / Productor</label><input id="f-lugarPesca" type="text"/></div>
+      <div class="field"><label>Nro. Guía Remisión</label><input id="f-nroGuia" type="text"/></div>
+      <div class="field"><label>Código Recibidor</label><input id="f-codRecibidor" type="text"/></div>
+    </div>
+  </div>
+
+  <!-- DESPACHO -->
+  <div class="card">
+    <div class="card-title">📦 Despacho</div>
+    <div class="fgrid">
+      <div class="field field-highlight" style="grid-column:1/-1">
+        <label>🏭 Bodega / Sitio de Destino ★</label>
+        <select id="f-sitio" onchange="onSitioChange(this.value)">
+          <option value="">— Seleccionar bodega de destino —</option>
+          <option value="LOGIST-Dic 2025">Icemart-Logística Dic 2025</option>
+          <option value="LOGIST-Sta Rosa 2026">Mare Sta. Rosa 2026 (Logística)</option>
+          <option value="TELVER-China Resi MARE-STA ROSA">Mare Sta. Rosa 1</option>
+          <option value="Telver china Resiq MARE CAMBIO">Mare El Cambio</option>
+          <option value="CHINA MARE CAMBIO">Icemart-Mare Cambio</option>
+          <option value="CHINA-MARE-STA ROSA">Icemart-Mare Sta. Rosa</option>
+          <option value="MOLO-LOGIST">Icemart-Logística Molo</option>
+          <option value="CHINA-LOGIST">Icemart-Logística China</option>
+          <option value="OTRA">Otra bodega / sitio nuevo</option>
+        </select>
+      </div>
+      <div class="field" id="f-sitio-otro-wrap" style="display:none;grid-column:1/-1">
+        <label>Nombre de la nueva bodega</label>
+        <input id="f-sitio-otro" type="text" placeholder="Ej: Mare Guayaquil 2026"/>
+      </div>
+      <div class="field"><label>Fecha del Despacho ★</label><input id="f-fechaDespacho" type="date"/></div>
+      <div class="field"><label>Solicitado Por</label><input id="f-solicitadoPor" type="text"/></div>
+      <div class="field"><label>Despachado Por</label><input id="f-despachador" type="text"/></div>
+      <div class="field">
+        <label>Cantidad Sacos</label>
+        <input id="f-cantSacos" type="number" min="0" placeholder="0" inputmode="decimal"
+          oninput="document.getElementById('f-cantKg').value=(parseFloat(this.value)||0)*25"/>
+      </div>
+      <div class="field field-auto">
+        <label>KG <span style="color:var(--cyan);font-size:10px">(sacos × 25)</span></label>
+        <input id="f-cantKg" type="number" min="0" step="0.01" placeholder="0.00"/>
+      </div>
+      <div class="field"><label>Lote del Saco</label><input id="f-lote" type="text"/></div>
+      <div class="field"><label>Marca del Saco</label><input id="f-marca" type="text"/></div>
+      <div class="field"><label>Numeración del Saco</label><input id="f-numSaco" type="text"/></div>
+    </div>
+  </div>
+
+  <!-- DEVOLUCIÓN -->
+  <div class="card">
+    <div class="card-title">🔄 Devolución</div>
+    <div class="fgrid">
+      <div class="field"><label>Fecha Devolución</label><input id="f-fechaDev" type="date"/></div>
+      <div class="field">
+        <label>Sacos Devueltos</label>
+        <input id="f-devSacos" type="number" min="0" placeholder="0" inputmode="decimal"
+          oninput="document.getElementById('f-devKg').value=(parseFloat(this.value)||0)*25"/>
+      </div>
+      <div class="field field-auto">
+        <label>KG Dev. <span style="color:var(--cyan);font-size:10px">(sacos × 25)</span></label>
+        <input id="f-devKg" type="number" min="0" step="0.01" placeholder="0.00"/>
+      </div>
+      <div class="field"><label>Numeración Saco Dev.</label><input id="f-devNumSaco" type="text"/></div>
+    </div>
+  </div>
+
+  <!-- OBSERVACIONES -->
+  <div class="card">
+    <div class="card-title">📝 Observaciones</div>
+    <div class="field">
+      <textarea id="f-obs" placeholder="Observaciones adicionales..."></textarea>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="btn-guardar" onclick="guardarRegistro()">
+    ✅ GUARDAR REGISTRO
+  </button>
+  <div style="height:8px"></div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const FB = {
+  apiKey:"AIzaSyA8Wvcv3MQNYJT-LNm3UBjG4ta1u-OwrGI",
+  authDomain:"lector-qr-25878.firebaseapp.com",
+  projectId:"lector-qr-25878",
+  storageBucket:"lector-qr-25878.firebasestorage.app",
+  messagingSenderId:"8007483133",
+  appId:"1:8007483133:web:60b74409d146ad8a0bc894"
+};
+const fbApp = initializeApp(FB);
+const db    = getFirestore(fbApp);
+const auth  = getAuth(fbApp);
+const CDESP = "metabisulfito_despachos";
+const CUSR  = "metabisulfito_usuarios";
+
+let curNombre = "", curUid = "";
+
+// Auth check
+const t = setTimeout(() => window.location.href = "../index.html", 8000);
+onAuthStateChanged(auth, async user => {
+  clearTimeout(t);
+  if (!user) { window.location.href = "../index.html"; return; }
+  try {
+    const snap = await getDoc(doc(db, CUSR, user.uid));
+    if (!snap.exists() || snap.data().activo === false) {
+      await signOut(auth); window.location.href = "../index.html"; return;
+    }
+    curNombre = snap.data().nombre || user.email;
+    curUid = user.uid;
+    document.getElementById("h-user").textContent = curNombre;
+    await cargarNextNum();
+  } catch(e) { window.location.href = "../index.html"; }
+});
+
+window.doLogout = async () => { await signOut(auth); window.location.href = "../index.html"; };
+
+async function cargarNextNum() {
+  try {
+    const snap = await getDocs(query(collection(db, CDESP), orderBy("createdAt","desc")));
+    const regs = snap.docs.map(d => d.data());
+    const maxN = regs.length > 0 ? Math.max(...regs.map(r => parseInt(r.numeracion)||0)) : 0;
+    document.getElementById("next-num").textContent = String(maxN + 1).padStart(5,"0");
+    return maxN + 1;
+  } catch(e) { return 1; }
+}
+
+window.autoPlaca = function(val) {
+  const sel = document.getElementById("f-conductor");
+  const opt = sel.querySelector('option[value="' + val + '"]');
+  const placa = opt ? (opt.getAttribute("data-placa") || "") : "";
+  const pInput = document.getElementById("f-placa");
+  const mWrap  = document.getElementById("f-cond-manual-wrap");
+  if (val === "OTRO") {
+    pInput.removeAttribute("readonly");
+    pInput.style.color = "var(--text)"; pInput.style.fontWeight = "normal";
+    pInput.value = ""; pInput.placeholder = "Ingresa la placa manualmente";
+    mWrap.style.display = "flex";
+  } else {
+    pInput.setAttribute("readonly","true");
+    pInput.style.color = "var(--cyan)"; pInput.style.fontWeight = "700";
+    pInput.value = placa;
+    mWrap.style.display = "none";
+    document.getElementById("f-conductor-manual").value = "";
+  }
+};
+
+window.onSitioChange = function(val) {
+  document.getElementById("f-sitio-otro-wrap").style.display = val === "OTRA" ? "block" : "none";
+};
+
+window.guardarRegistro = async function() {
+  const conductorRaw = v("f-conductor");
+  const conductor = conductorRaw === "OTRO" ? v("f-conductor-manual") : conductorRaw;
+  const fechaDespacho = v("f-fechaDespacho");
+  const sitioVal = v("f-sitio");
+  const sitioOtro = v("f-sitio-otro");
+  if (!conductor || !fechaDespacho) {
+    toast("Faltan campos obligatorios: Conductor ★ y Fecha del Despacho ★", "error"); return;
+  }
+  if (!sitioVal) { toast("Debes seleccionar la Bodega / Sitio ★", "error"); return; }
+  if (sitioVal === "OTRA" && !sitioOtro) { toast("Escribe el nombre de la nueva bodega.", "error"); return; }
+
+  const btn = document.getElementById("btn-guardar");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Guardando...';
+
+  try {
+    const nextN = await cargarNextNum();
+    const sitioSel = document.getElementById("f-sitio");
+    const sitioLabel = sitioVal === "OTRA" ? sitioOtro
+      : (sitioSel.options[sitioSel.selectedIndex]?.text || sitioVal);
+
+    const reg = {
+      numeracion: String(nextN).padStart(5,"0"),
+      ingresadoPor: curNombre, ingresadoPorUid: curUid,
+      sitioKey: sitioVal === "OTRA" ? sitioOtro : sitioVal,
+      sitioLabel,
+      placa: v("f-placa"), conductor,
+      fechaInicio: v("f-fechaInicio"), horaSalida: v("f-horaSalida"),
+      puntoPartida: v("f-puntoPartida"), fechaFin: v("f-fechaFin"),
+      horaLlegada: v("f-horaLlegada"), puntoLlegada: v("f-puntoLlegada"),
+      ruta: v("f-ruta"), guiaMdi: v("f-guiaMdi"),
+      lugarPesca: v("f-lugarPesca"), nroGuia: v("f-nroGuia"),
+      codRecibidor: v("f-codRecibidor"), fechaDespacho,
+      solicitadoPor: v("f-solicitadoPor"), despachador: v("f-despachador"),
+      cantSacos: parseFloat(v("f-cantSacos"))||0,
+      cantKg:    parseFloat(v("f-cantKg"))||0,
+      lote: v("f-lote"), marca: v("f-marca"), numSaco: v("f-numSaco"),
+      fechaDev: v("f-fechaDev"),
+      devSacos: parseFloat(v("f-devSacos"))||0,
+      devKg:    parseFloat(v("f-devKg"))||0,
+      devNumSaco: v("f-devNumSaco"), observacion: v("f-obs"),
+      createdAt: new Date().toISOString()
+    };
+    await addDoc(collection(db, CDESP), reg);
+    generarPDF(reg);
+    limpiarForm();
+    await cargarNextNum();
+    toast("✅ Registro N° " + reg.numeracion + " guardado. PDF generado.", "success");
+  } catch(e) { toast("Error: " + e.message, "error"); }
+
+  btn.disabled = false; btn.textContent = "✅ GUARDAR REGISTRO";
+};
+
+function v(id) { return (document.getElementById(id)?.value || "").trim(); }
+
+function toast(msg, type = "success") {
+  const old = document.getElementById("_toast"); if (old) old.remove();
+  const t = document.createElement("div"); t.id = "_toast";
+  const styles = {
+    success: "background:#052e1a;border:1px solid #065f46;color:#6ee7b7",
+    error:   "background:#2d0a0a;border:1px solid #991b1b;color:#fca5a5",
+    info:    "background:#0a1f35;border:1px solid #1d6fa8;color:#60b8ff",
+  };
+  t.style.cssText = `position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:9999;
+    padding:12px 22px;border-radius:12px;font-size:13px;font-weight:600;
+    box-shadow:0 8px 32px rgba(0,0,0,.5);animation:fadeIn .3s ease;
+    font-family:'Syne',sans-serif;max-width:90vw;text-align:center;
+    ${styles[type]||styles.success}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4500);
+}
+
+function limpiarForm() {
+  const ids = ["f-placa","f-conductor","f-conductor-manual","f-fechaInicio","f-horaSalida",
+    "f-puntoPartida","f-fechaFin","f-horaLlegada","f-puntoLlegada","f-ruta","f-guiaMdi",
+    "f-lugarPesca","f-nroGuia","f-codRecibidor","f-fechaDespacho","f-solicitadoPor","f-despachador",
+    "f-cantSacos","f-cantKg","f-lote","f-marca","f-numSaco","f-fechaDev","f-devSacos","f-devKg",
+    "f-devNumSaco","f-obs","f-sitio-otro"];
+  ids.forEach(id => { const e = document.getElementById(id); if(e) e.value = ""; });
+  document.getElementById("f-conductor").value = "";
+  document.getElementById("f-sitio").value = "";
+  document.getElementById("f-sitio-otro-wrap").style.display = "none";
+  document.getElementById("f-cond-manual-wrap").style.display = "none";
+  const pf = document.getElementById("f-placa");
+  pf.setAttribute("readonly","true"); pf.style.color = "var(--cyan)"; pf.style.fontWeight = "700";
+}
+
+// PDF — same professional format as original
+function limpP(s) {
+  if (!s && s !== 0) return "-";
+  return String(s).replace(/[áàä]/g,"a").replace(/[ÁÀÄ]/g,"A").replace(/[éèë]/g,"e")
+    .replace(/[ÉÈË]/g,"E").replace(/[íìï]/g,"i").replace(/[ÍÌÏ]/g,"I")
+    .replace(/[óòö]/g,"o").replace(/[ÓÒÖ]/g,"O").replace(/[úùü]/g,"u")
+    .replace(/[ÚÙÜ]/g,"U").replace(/ñ/g,"n").replace(/Ñ/g,"N").replace(/[^\x20-\x7E]/g,"");
+}
+
+window.generarPDF = function(r) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  const W=210, M=14, CW=W-M*2;
+  const AZ=[13,32,53], AM=[29,111,168], AC=[6,174,212];
+  const GF=[246,248,251], GA=[240,244,248], GL=[100,120,145];
+  const NG=[30,30,30], BL=[255,255,255], BC=[200,215,228];
+
+  // Header
+  doc.setFillColor(...AZ); doc.rect(0,0,W,46,"F");
+  doc.setFillColor(...AC); doc.rect(0,0,5,46,"F");
+  doc.setFillColor(...AM); doc.rect(0,46,W,1.5,"F");
+  doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(150,185,210);
+  doc.text("MARECUADOR CIA. LTDA.", 8, 24);
+  doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(120,160,190);
+  doc.text("Bodega Sta. Rosa  |  Control de Insumos Quimicos", 8, 29);
+  doc.setFontSize(6); doc.setTextColor(100,140,170);
+  const fechaReg = new Date(r.createdAt||Date.now());
+  doc.text("Ingresado por: "+limpP(r.ingresadoPor)+"   |   "+fechaReg.toLocaleDateString("es-EC"), 8, 34);
+  doc.setFont("helvetica","bold"); doc.setFontSize(6.5); doc.setTextColor(...AC);
+  doc.text("CODIGO: FOR-BOD-05", W-M, 9, {align:"right"});
+  doc.text("VERSION: 00", W-M, 14, {align:"right"});
+  doc.text("EMISION: 10/02/2026", W-M, 19, {align:"right"});
+  doc.setFontSize(8.5); doc.setTextColor(...BL);
+  doc.text("ORDEN DE DESPACHO", W-M, 28, {align:"right"});
+  doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(180,210,230);
+  doc.text("METABISULFITO DE SODIO", W-M, 33, {align:"right"});
+  doc.setFillColor(...AM); doc.roundedRect(W-M-32,37,33,7,1.5,1.5,"F");
+  doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(...BL);
+  doc.text("No. "+limpP(r.numeracion), W-M-16, 42.5, {align:"center"});
+
+  let y=52, alt=false;
+  const sec = (t) => {
+    doc.setFillColor(...AM); doc.rect(M,y,CW,7,"F");
+    doc.setFillColor(...AC); doc.rect(M,y,3.5,7,"F");
+    doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(...BL);
+    doc.text(t, M+7, y+5); y+=8.5;
+  };
+  const f2 = (l1,v1,l2,v2) => {
+    doc.setFillColor(...(alt?GA:GF)); doc.rect(M,y,CW,9,"F");
+    doc.setDrawColor(...BC); doc.setLineWidth(.15); doc.rect(M,y,CW,9,"S");
+    doc.line(M+CW/2,y,M+CW/2,y+9); alt=!alt;
+    const c1=M+3.5, c2=M+CW/2+3.5;
+    doc.setFont("helvetica","bold"); doc.setFontSize(5.5); doc.setTextColor(...GL);
+    doc.text(l1,c1,y+3); doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(...NG);
+    doc.text(limpP(v1),c1,y+7.8);
+    if(l2){ doc.setFont("helvetica","bold"); doc.setFontSize(5.5); doc.setTextColor(...GL);
+      doc.text(l2,c2,y+3); doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(...NG);
+      doc.text(limpP(v2),c2,y+7.8); }
+    y+=9.5;
+  };
+  const f1 = (l,val) => {
+    doc.setFillColor(...(alt?GA:GF)); doc.rect(M,y,CW,9,"F");
+    doc.setDrawColor(...BC); doc.setLineWidth(.15); doc.rect(M,y,CW,9,"S"); alt=!alt;
+    doc.setFont("helvetica","bold"); doc.setFontSize(5.5); doc.setTextColor(...GL);
+    doc.text(l,M+3.5,y+3); doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(...NG);
+    doc.text(limpP(val),M+3.5,y+7.8); y+=9.5;
+  };
+
+  alt=false; sec("INFORMACION DEL TRANSPORTISTA");
+  f2("PLACA",r.placa,"CONDUCTOR",r.conductor);
+  f2("FECHA INICIO",r.fechaInicio,"HORA SALIDA",r.horaSalida);
+  f2("PUNTO PARTIDA",r.puntoPartida,"FECHA FIN",r.fechaFin);
+  f2("HORA LLEGADA",r.horaLlegada,"PUNTO LLEGADA",r.puntoLlegada);
+  f2("RUTA",r.ruta,"GUIA MDI",r.guiaMdi);
+  f2("LUGAR PESCA",r.lugarPesca,"NRO. GUIA",r.nroGuia);
+  f1("CODIGO RECIBIDOR",r.codRecibidor); y+=3;
+
+  alt=false; sec("DESPACHO DE METABISULFITO DE SODIO");
+  f2("FECHA DESPACHO",r.fechaDespacho,"SOLICITADO POR",r.solicitadoPor);
+  f2("DESPACHADO POR",r.despachador,"BODEGA DESTINO",r.sitioLabel||r.lugarPesca);
+  f2("CANTIDAD SACOS",String(r.cantSacos||0),"CANTIDAD KG",String(r.cantKg||0)+" kg");
+  f2("LOTE",r.lote,"MARCA",r.marca);
+  f1("NUMERACION SACO",r.numSaco); y+=3;
+
+  alt=false; sec("DEVOLUCION DE METABISULFITO DE SODIO");
+  f2("FECHA DEVOLUCION",r.fechaDev,"SACOS DEVUELTOS",String(r.devSacos||0));
+  f2("KG DEVUELTOS",String(r.devKg||0)+" kg","NUM. SACO DEV.",r.devNumSaco); y+=3;
+
+  const kgUsado = (parseFloat(r.cantKg)||0)-(parseFloat(r.devKg)||0);
+  doc.setFillColor(...AZ); doc.rect(M,y,CW,11,"F");
+  doc.setFillColor(...AC); doc.rect(M,y,3.5,11,"F");
+  doc.setFont("helvetica","bold"); doc.setFontSize(6.5); doc.setTextColor(160,200,220);
+  doc.text("KG EFECTIVAMENTE UTILIZADOS EN LA PESCA:", M+7, y+4.5);
+  doc.setFontSize(12); doc.setTextColor(...AC);
+  doc.text(kgUsado.toFixed(2)+" KG", M+7, y+10); y+=16;
+
+  if(r.observacion){
+    doc.setFillColor(...GF); doc.rect(M,y,CW,16,"F");
+    doc.setDrawColor(...BC); doc.setLineWidth(.15); doc.rect(M,y,CW,16,"S");
+    doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...NG);
+    const lines = doc.splitTextToSize(limpP(r.observacion), CW-7);
+    doc.text(lines, M+4, y+5.5); y+=20;
+  }
+
+  y+=8;
+  const fw=54, gap=(CW-fw*3)/2;
+  [["ENCARGADO DE DESPACHO",r.despachador],["TRANSPORTISTA",r.conductor],["RECIBIDO POR",r.solicitadoPor]].forEach(([tit,nom],i)=>{
+    const fx=M+i*(fw+gap);
+    doc.setFillColor(...GF); doc.rect(fx,y,fw,22,"F");
+    doc.setDrawColor(...BC); doc.setLineWidth(.2); doc.rect(fx,y,fw,22,"S");
+    doc.setFillColor(...AM); doc.rect(fx,y,fw,3,"F");
+    doc.setDrawColor(...AM); doc.setLineWidth(.5);
+    doc.line(fx+5,y+15,fx+fw-5,y+15);
+    doc.setFont("helvetica","bold"); doc.setFontSize(6); doc.setTextColor(...GL);
+    doc.text(tit,fx+fw/2,y+19.5,{align:"center"});
+    doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(...NG);
+    doc.text(limpP(nom)||"",fx+fw/2,y+11,{align:"center"});
+  });
+
+  doc.setFillColor(...AZ); doc.rect(0,284,W,13,"F");
+  doc.setFillColor(...AC); doc.rect(0,284,W,1.2,"F");
+  doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(150,185,210);
+  doc.text("MARECUADOR CIA. LTDA.  |  FOR-BOD-05  |  Generado: "+new Date().toLocaleDateString("es-EC"), W/2, 290.5, {align:"center"});
+  doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor(180,210,230);
+  doc.text("No. "+limpP(r.numeracion), W/2, 294.5, {align:"center"});
+
+  const blob = doc.output("blob");
+  const url  = URL.createObjectURL(blob);
+  const win  = window.open(url, "_blank");
+  if (!win) doc.save("Despacho_"+limpP(r.numeracion)+".pdf");
+  doc.save("Despacho_"+limpP(r.numeracion)+".pdf");
+};
+</script>
+</body>
+</html>
