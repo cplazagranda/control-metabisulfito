@@ -329,6 +329,25 @@
       <div class="card">
         <div class="card-title">📦 Despacho</div>
         <div class="fgrid">
+          <div class="field" style="grid-column:1/-1">
+            <label>🏭 Bodega / Sitio de Destino ★</label>
+            <select id="f-sitio" onchange="onSitioChange(this.value)" style="background:var(--bg);border:2px solid var(--cyan);border-radius:10px;padding:11px 13px;color:var(--cyan);font-size:14px;font-family:inherit;font-weight:700;outline:none;width:100%">
+              <option value="">-- Seleccionar bodega de destino --</option>
+              <option value="LOGIST-Dic 2025">Icemart-Logística Dic 2025</option>
+              <option value="LOGIST-Sta Rosa 2026">Mare Sta. Rosa 2026 (Logística)</option>
+              <option value="TELVER-China Resi MARE-STA ROSA">Mare Sta. Rosa 1</option>
+              <option value="Telver china Resiq MARE CAMBIO">Mare El Cambio</option>
+              <option value="CHINA MARE CAMBIO">Icemart-Mare Cambio</option>
+              <option value="CHINA-MARE-STA ROSA">Icemart-Mare Sta. Rosa</option>
+              <option value="MOLO-LOGIST">Icemart-Logística Molo</option>
+              <option value="CHINA-LOGIST">Icemart-Logística China</option>
+              <option value="OTRA">Otra bodega / sitio nuevo</option>
+            </select>
+          </div>
+          <div class="field" id="f-sitio-otro-wrap" style="display:none;grid-column:1/-1">
+            <label>Nombre de la nueva bodega</label>
+            <input id="f-sitio-otro" type="text" placeholder="Ej: Mare Guayaquil 2026"/>
+          </div>
           <div class="field"><label>Fecha del Despacho ★</label><input id="f-fechaDespacho" type="date"/></div>
           <div class="field"><label>Solicitado Por</label><input id="f-solicitadoPor" type="text"/></div>
           <div class="field"><label>Despachado Por</label><input id="f-despachador" type="text"/></div>
@@ -542,6 +561,26 @@
     <div class="modal-handle"></div>
     <div class="modal-title">✏️ Editar Registro <span id="edit-num" style="color:var(--cyan)"></span></div>
     <div id="modal-edit-body">
+      <!-- Bodega destino -->
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin:14px 0 10px">🏭 Bodega / Sitio de Destino</div>
+      <div class="field" style="margin-bottom:14px">
+        <label>Bodega ★</label>
+        <select id="e-sitio" onchange="document.getElementById('e-sitio-otro-wrap').style.display=this.value==='OTRA'?'block':'none'" style="background:var(--bg);border:2px solid var(--cyan);border-radius:10px;padding:11px 13px;color:var(--cyan);font-size:14px;font-family:inherit;font-weight:700;outline:none;width:100%">
+          <option value="">-- Seleccionar bodega --</option>
+          <option value="LOGIST-Dic 2025">Icemart-Logística Dic 2025</option>
+          <option value="LOGIST-Sta Rosa 2026">Mare Sta. Rosa 2026 (Logística)</option>
+          <option value="TELVER-China Resi MARE-STA ROSA">Mare Sta. Rosa 1</option>
+          <option value="Telver china Resiq MARE CAMBIO">Mare El Cambio</option>
+          <option value="CHINA MARE CAMBIO">Icemart-Mare Cambio</option>
+          <option value="CHINA-MARE-STA ROSA">Icemart-Mare Sta. Rosa</option>
+          <option value="MOLO-LOGIST">Icemart-Logística Molo</option>
+          <option value="CHINA-LOGIST">Icemart-Logística China</option>
+          <option value="OTRA">Otra bodega / sitio nuevo</option>
+        </select>
+        <div id="e-sitio-otro-wrap" style="display:none;margin-top:8px">
+          <input id="e-sitio-otro" type="text" placeholder="Nombre de la nueva bodega"/>
+        </div>
+      </div>
       <!-- Transportista -->
       <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin:14px 0 10px;display:flex;align-items:center;gap:8px">🚛 Transportista</div>
       <div class="fgrid">
@@ -721,12 +760,18 @@ window.guardarRegistro=async function(){
   const conductorRaw=v("f-conductor");
     const conductor = conductorRaw==="OTRO" ? v("f-conductor-manual") : conductorRaw;
     const fechaDespacho=v("f-fechaDespacho");
+  const sitioVal = v("f-sitio");
+  const sitioOtro = v("f-sitio-otro");
   if(!conductor||!fechaDespacho){showAlert("Faltan campos obligatorios: Conductor ★ y Fecha del Despacho ★","error");return;}
+  if(!sitioVal){showAlert("Debes seleccionar la Bodega / Sitio de Destino ★","error");return;}
+  if(sitioVal==="OTRA"&&!sitioOtro){showAlert("Escribe el nombre de la nueva bodega.","error");return;}
   const btn=g("btn-guardar"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Guardando en Firebase...';
   try{
     const reg={
       numeracion:String(nextNum).padStart(5,"0"),
       ingresadoPor:curNombre, ingresadoPorUid:curUser.uid,
+      sitioKey: v("f-sitio")==="OTRA" ? v("f-sitio-otro") : v("f-sitio"),
+      sitioLabel: (()=>{ const s=document.getElementById("f-sitio"); const o=s.options[s.selectedIndex]; return v("f-sitio")==="OTRA" ? v("f-sitio-otro") : (o?o.text:""); })(),
       placa:v("f-placa"), conductor, fechaInicio:v("f-fechaInicio"),
       horaSalida:v("f-horaSalida"), puntoPartida:v("f-puntoPartida"),
       fechaFin:v("f-fechaFin"), horaLlegada:v("f-horaLlegada"),
@@ -878,7 +923,7 @@ function renderTabla(){
       <td><span class="badge b-blue">${r.numeracion}</span></td>
       <td style="white-space:nowrap">${r.fechaDespacho||"—"}</td>
       <td>${r.conductor||"—"}</td><td>${r.placa||"—"}</td>
-      <td>${r.lugarPesca||"—"}</td><td>${r.cantSacos||"—"}</td>
+      <td>${r.sitioLabel ? '<span class="badge b-yellow" style="font-size:10px">'+r.sitioLabel+'</span>' : (r.lugarPesca||"—")}</td><td>${r.cantSacos||"—"}</td>
       <td>${r.cantKg?r.cantKg+" kg":"—"}</td>
       <td>${r.devKg?'<span class="badge b-green">'+r.devKg+' kg</span>':'<span style="color:var(--muted)">—</span>'}</td>
       <td style="font-size:11px;color:var(--muted)">${r.ingresadoPor||"—"}</td>
@@ -1288,11 +1333,20 @@ window.changeRole=async(uid,r)=>{if(!confirm("¿Cambiar rol a "+r+"?"))return;aw
 
 
 // ─── AUTO PLACA desde conductor ───
+window.onSitioChange = function(val){
+  const wrap = document.getElementById("f-sitio-otro-wrap");
+  if(wrap) wrap.style.display = (val === "OTRA") ? "block" : "none";
+};
+
 window.autoPlaca = function(val){
   const sel = document.getElementById("f-conductor");
   const opt = sel ? sel.querySelector('option[value="'+val+'"]') : null;
   const placa = opt ? (opt.getAttribute("data-placa") || "") : "";
   const placaInput = document.getElementById("f-placa");
+  const sitioSel = document.getElementById("f-sitio");
+  if(sitioSel) { sitioSel.value = ""; onSitioChange(""); }
+  const sitioOtroInp = document.getElementById("f-sitio-otro");
+  if(sitioOtroInp) sitioOtroInp.value = "";
   const manualWrap = document.getElementById("f-conductor-manual-wrap");
   if(!placaInput) return;
   if(val === "OTRO"){
@@ -1349,17 +1403,19 @@ window.cargarKardex = async function(){
     let movsBase = todos;
     if(sitioKey !== "todos"){
       movsBase = todos.filter(r => {
+        // Primero: match exacto por sitioKey guardado en Firebase
+        if(r.sitioKey && r.sitioKey === sitioKey) return true;
+        // Segundo: búsqueda flexible por lugar/destino (registros sin sitioKey)
         const lugar = (r.lugarPesca||"").toLowerCase();
         const destino = (r.puntoLlegada||"").toLowerCase();
         const combinado = lugar + " " + destino;
-        // Normalizar key para busqueda flexible
         const palabras = sitioKey.toLowerCase()
           .replace("icemart","").replace("logistica","logist")
           .replace("sta. rosa","sta rosa").replace("el cambio","cambio")
           .split(" ").filter(p=>p.length>2);
         return palabras.some(p => combinado.includes(p));
       });
-      // Si no matchea nada, mostrar todos (para sitios sin lugar pesca definido)
+      // Si no matchea nada, mostrar todos
       if(movsBase.length === 0) movsBase = todos;
     }
 
@@ -1423,7 +1479,7 @@ window.cargarKardex = async function(){
           docRef:     r.numeracion || "-",
           docEgreso:  r.nroGuia || r.guiaMdi || "-",
           placa:      r.placa  || "-",
-          destino:    r.lugarPesca || r.puntoLlegada || "-",
+          destino:    r.sitioLabel || r.lugarPesca || r.puntoLlegada || "-",
           conductor:  r.conductor  || "-",
           solicitado: r.solicitadoPor || "-",
           _raw: r,
@@ -1609,6 +1665,12 @@ window.editarRegistro = function(id){
   document.getElementById("edit-num").textContent = "N° " + r.numeracion;
   // Fill all fields
   const set = (fid, val) => { const e = document.getElementById(fid); if(e) e.value = val || ""; };
+  // Set bodega/sitio
+  const eSitio = document.getElementById("e-sitio");
+  if(eSitio){
+    eSitio.value = r.sitioKey || "";
+    document.getElementById("e-sitio-otro-wrap").style.display = "none";
+  }
   set("e-conductor",    r.conductor);    set("e-placa",        r.placa);
   set("e-fechaInicio",  r.fechaInicio);  set("e-horaSalida",   r.horaSalida);
   set("e-puntoPartida", r.puntoPartida); set("e-fechaFin",     r.fechaFin);
