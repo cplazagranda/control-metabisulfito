@@ -2,153 +2,220 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Control Metabisulfito — Bodega Sta. Rosa</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="theme-color" content="#0d2035"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Metabisulfito"/>
+  <link rel="manifest" href="manifest.json"/>
+  <title>Control Metabisulfito — Sta. Rosa</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
-      --bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#21262d;--border2:#30363d;
-      --text:#e6edf3;--muted:#8b949e;--blue:#38bdf8;--blue-dark:#0c2940;--blue-border:#1e4976;
-      --green:#a3e635;--orange:#fb923c;--pink:#f472b6;--red:#f87171;--yellow:#fbbf24;
+      --bg:#0a0f1a;--surface:#111827;--surface2:#1a2332;--card:#1e2d3d;
+      --border:#1f3347;--border2:#2d4a63;--text:#f0f6ff;--muted:#7a9bb5;
+      --blue:#3b9eff;--blue2:#1d6fa8;--cyan:#06d6f7;--green:#10e89a;
+      --orange:#ff8c42;--pink:#f06292;--yellow:#ffd166;--red:#ff5252;
+      --purple:#a78bfa;
+      --grad1:linear-gradient(135deg,#1d6fa8,#06d6f7);
+      --grad2:linear-gradient(135deg,#10b981,#06d6f7);
+      --grad3:linear-gradient(135deg,#f06292,#a78bfa);
+      --shadow:0 8px 32px rgba(0,0,0,.5);
     }
-    body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
 
-    /* ---- LOADING ---- */
-    #loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:var(--blue)}
-    .loading-logo{font-size:52px;animation:pulse 1.5s ease-in-out infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+    /* ===== LOADING ===== */
+    #loading-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+    .load-icon{font-size:64px;animation:float 2s ease-in-out infinite}
+    .load-bar{width:200px;height:3px;background:#1f3347;border-radius:99px;overflow:hidden}
+    .load-progress{height:100%;background:var(--grad1);border-radius:99px;animation:loadbar 2s ease-in-out infinite}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    @keyframes loadbar{0%{width:0%}100%{width:100%}}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .spinner{display:inline-block;width:14px;height:14px;border:2px solid #ffffff44;border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .spinner{display:inline-block;width:16px;height:16px;border:2px solid #ffffff30;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 
-    /* ---- LOGIN ---- */
-    #login-screen{min-height:100vh;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 40%,#0d2035 0%,#0d1117 70%)}
-    .login-box{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 24px 64px #00000080}
-    .login-logo{text-align:center;margin-bottom:24px}
-    .login-logo .icon{font-size:44px;display:block;margin-bottom:8px}
-    .login-logo h1{font-family:'Syne',sans-serif;font-size:18px;color:#e0f2fe;letter-spacing:1px}
-    .login-logo p{font-size:10px;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;margin-top:4px}
-    .login-field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
-    .login-field label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
-    .login-field input{background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;outline:none;transition:border-color .2s}
-    .login-field input:focus{border-color:var(--blue)}
-    .btn-login{width:100%;background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:white;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:1px;margin-top:4px;transition:opacity .2s}
+    /* ===== LOGIN ===== */
+    #login-screen{display:none;position:fixed;inset:0;z-index:999;background:radial-gradient(ellipse at 50% 30%,#0d2540 0%,#0a0f1a 70%);align-items:center;justify-content:center;padding:20px}
+    .login-wrap{width:100%;max-width:420px;animation:fadeIn .4s ease}
+    .login-card{background:var(--surface);border:1px solid var(--border2);border-radius:24px;padding:40px 36px;box-shadow:var(--shadow)}
+    .login-header{text-align:center;margin-bottom:32px}
+    .login-icon{font-size:52px;display:block;margin-bottom:12px}
+    .login-title{font-size:20px;font-weight:800;color:#e0f4ff;letter-spacing:.5px}
+    .login-sub{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+    .lfield{margin-bottom:18px}
+    .lfield label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+    .lfield input{width:100%;background:var(--bg);border:1.5px solid var(--border2);border-radius:12px;padding:13px 16px;color:var(--text);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s}
+    .lfield input:focus{border-color:var(--blue)}
+    .btn-login{width:100%;background:var(--grad1);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;letter-spacing:.5px;transition:opacity .2s;margin-top:4px}
     .btn-login:hover{opacity:.9}
     .btn-login:disabled{opacity:.5;cursor:not-allowed}
-    .login-error{background:#2d0a0a;border:1px solid #991b1b;color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:16px;display:none}
+    .lerror{background:#2d0a0a;border:1px solid #991b1b;color:#fca5a5;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none}
 
-    /* ---- HEADER ---- */
-    .header{background:linear-gradient(135deg,#1a3a5c 0%,#0d2035 100%);padding:16px 28px;border-bottom:2px solid var(--blue-border);display:flex;align-items:center;gap:14px}
-    .logo{width:44px;height:44px;background:linear-gradient(135deg,#3b82f6,#0ea5e9);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-    .header-title{flex:1}
-    .header-title h1{font-family:'Syne',sans-serif;font-size:16px;color:#e0f2fe;letter-spacing:1px}
-    .header-title p{font-size:10px;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
-    .header-right{display:flex;align-items:center;gap:12px}
-    .user-badge{background:var(--blue-dark);border:1px solid var(--blue-border);border-radius:8px;padding:6px 12px;font-size:11px;color:var(--blue)}
-    .role-badge{border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700}
-    .role-admin{background:#fbbf2422;color:var(--yellow);border:1px solid #fbbf2455}
-    .role-operario{background:#38bdf822;color:var(--blue);border:1px solid #38bdf855}
-    .btn-logout{background:#1a1f28;border:1px solid var(--border2);color:var(--muted);border-radius:6px;padding:6px 12px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer}
-    .btn-logout:hover{color:var(--red);border-color:#991b1b}
+    /* ===== HEADER ===== */
+    .header{background:linear-gradient(135deg,#0d2035,#091624);border-bottom:1px solid var(--border2);padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+    .h-logo{width:40px;height:40px;background:var(--grad1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .h-info{flex:1;min-width:0}
+    .h-title{font-size:14px;font-weight:700;color:#e0f4ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .h-sub{font-size:10px;color:var(--muted);letter-spacing:1px}
+    .h-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .rbadge{border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;white-space:nowrap}
+    .rbadge-admin{background:#ffd16622;color:var(--yellow);border:1px solid #ffd16644}
+    .rbadge-operario{background:#3b9eff22;color:var(--blue);border:1px solid #3b9eff44}
+    .btn-out{background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif}
 
-    /* ---- TABS ---- */
-    .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;overflow-x:auto}
-    .tab-btn{padding:13px 18px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:.5px;color:var(--muted);border:none;border-bottom:2px solid transparent;background:none;white-space:nowrap;transition:all .2s}
-    .tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+    /* ===== BOTTOM NAV ===== */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--surface);border-top:1px solid var(--border2);display:flex;padding:0 0 env(safe-area-inset-bottom)}
+    .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;cursor:pointer;border:none;background:none;color:var(--muted);font-size:9px;font-family:'Inter',sans-serif;font-weight:600;letter-spacing:.5px;text-transform:uppercase;transition:color .2s;gap:4px}
+    .nav-btn .ni{font-size:20px;transition:transform .2s}
+    .nav-btn.active{color:var(--blue)}
+    .nav-btn.active .ni{transform:scale(1.15)}
 
-    /* ---- BODY ---- */
-    .body{padding:22px 26px;max-width:1100px;margin:0 auto}
+    /* ===== MAIN ===== */
+    .main{padding:16px 16px 90px;max-width:900px;margin:0 auto}
 
-    /* ---- SECTION ---- */
-    .section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px}
-    .section-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:14px}
+    /* ===== SECTION ===== */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;animation:fadeIn .3s ease}
+    .card-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;display:flex;align-items:center;gap:8px}
 
-    /* ---- GRID / FIELDS ---- */
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:13px}
-    .field{display:flex;flex-direction:column;gap:5px}
-    .field label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
-    .field input,.field select,.field textarea{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:'DM Mono',monospace;outline:none;transition:border-color .2s}
+    /* ===== FORM ===== */
+    .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+    .fgrid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+    .field input,.field select,.field textarea{
+      background:var(--bg);border:1.5px solid var(--border2);border-radius:10px;
+      padding:11px 13px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;
+      outline:none;transition:border-color .2s;width:100%;
+      -webkit-appearance:none;appearance:none
+    }
     .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue)}
-    .field textarea{resize:vertical;min-height:60px}
-    .field select option{background:var(--bg)}
+    .field textarea{resize:none;min-height:72px}
+    .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237a9bb5' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
 
-    /* ---- BUTTONS ---- */
-    .btn-primary{background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:white;border:none;border-radius:8px;padding:11px 26px;font-size:13px;font-weight:700;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:1px;transition:opacity .2s}
-    .btn-primary:hover{opacity:.9}
-    .btn-primary:disabled{opacity:.5;cursor:not-allowed}
-    .btn-danger{background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b;border-radius:6px;padding:4px 10px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer}
-    .btn-success{background:#14532d;color:#86efac;border:1px solid #16a34a;border-radius:6px;padding:4px 10px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer}
-    .btn-info{background:var(--blue-dark);color:var(--blue);border:1px solid var(--blue-border);border-radius:6px;padding:4px 10px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer}
-    .btn-secondary{background:#1a2535;color:var(--muted);border:1px solid var(--border2);border-radius:6px;padding:8px 14px;font-size:12px;font-family:'DM Mono',monospace;cursor:pointer}
-    .btn-warning{background:#451a03;color:var(--orange);border:1px solid #92400e;border-radius:6px;padding:4px 10px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer}
+    /* Date/time pickers look native but styled */
+    input[type="date"],input[type="time"]{color-scheme:dark;min-height:46px}
 
-    /* ---- ALERTS ---- */
-    .alert{border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px}
-    .alert-success{background:#052e16;border:1px solid #16a34a;color:#86efac}
+    /* ===== BUTTONS ===== */
+    .btn{border:none;border-radius:12px;padding:13px 20px;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .btn-primary{background:var(--grad1);color:#fff;width:100%}
+    .btn-primary:hover:not(:disabled){opacity:.9}
+    .btn-sm{padding:6px 12px;font-size:12px;border-radius:8px;font-weight:600}
+    .btn-danger{background:#2d0a0a;color:var(--red);border:1px solid #991b1b}
+    .btn-info{background:#0a1f35;color:var(--blue);border:1px solid var(--border2)}
+    .btn-success{background:#052e1a;color:var(--green);border:1px solid #065f46}
+    .btn-warn{background:#2d1a00;color:var(--orange);border:1px solid #92400e}
+    .btn-ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+
+    /* ===== ALERTS ===== */
+    #alert-box{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:500;width:calc(100% - 32px);max-width:500px;pointer-events:none}
+    .alert{border-radius:12px;padding:12px 16px;font-size:13px;font-weight:600;box-shadow:var(--shadow);animation:fadeIn .3s ease;pointer-events:all}
+    .alert-success{background:#052e1a;border:1px solid #065f46;color:#6ee7b7}
     .alert-error{background:#2d0a0a;border:1px solid #991b1b;color:#fca5a5}
-    .alert-info{background:var(--blue-dark);border:1px solid var(--blue-border);color:var(--blue)}
-    .alert-warning{background:#451a03;border:1px solid #92400e;color:var(--orange)}
+    .alert-info{background:#0a1f35;border:1px solid var(--border2);color:var(--blue)}
 
-    /* ---- TABLE ---- */
-    .table-wrap{overflow-x:auto}
-    table{width:100%;border-collapse:collapse;font-size:12px}
-    th{background:var(--bg);color:var(--muted);padding:10px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid var(--border);white-space:nowrap}
-    td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
-    tfoot td{border-top:2px solid var(--border2);font-weight:700}
-    .actions{display:flex;gap:6px;flex-wrap:wrap}
+    /* ===== BADGES ===== */
+    .badge{border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;display:inline-block;white-space:nowrap}
+    .b-blue{background:#3b9eff22;color:var(--blue);border:1px solid #3b9eff44}
+    .b-green{background:#10e89a22;color:var(--green);border:1px solid #10e89a44}
+    .b-orange{background:#ff8c4222;color:var(--orange);border:1px solid #ff8c4244}
+    .b-pink{background:#f0629222;color:var(--pink);border:1px solid #f0629244}
+    .b-yellow{background:#ffd16622;color:var(--yellow);border:1px solid #ffd16644}
+    .b-red{background:#ff525222;color:var(--red);border:1px solid #ff525244}
+    .b-purple{background:#a78bfa22;color:var(--purple);border:1px solid #a78bfa44}
 
-    /* ---- BADGES ---- */
-    .badge{border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;display:inline-block}
-    .badge-blue{background:#38bdf822;color:var(--blue);border:1px solid #38bdf855}
-    .badge-green{background:#a3e63522;color:var(--green);border:1px solid #a3e63555}
-    .badge-pink{background:#f472b622;color:var(--pink);border:1px solid #f472b655}
-    .badge-orange{background:#fb923c22;color:var(--orange);border:1px solid #fb923c55}
-    .badge-yellow{background:#fbbf2422;color:var(--yellow);border:1px solid #fbbf2455}
-    .badge-red{background:#f8717122;color:var(--red);border:1px solid #f8717155}
+    /* ===== NUM BADGE ===== */
+    .num-badge{background:#0a1f35;border:1px solid var(--border2);border-radius:10px;padding:8px 16px;font-size:14px;color:var(--blue);font-weight:700;font-family:'JetBrains Mono',monospace}
 
-    /* ---- STATS ---- */
-    .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px}
-    .stat-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;text-align:center}
-    .stat-num{font-size:24px;font-weight:700;font-family:'Syne',sans-serif;color:var(--blue)}
-    .stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px}
-
-    /* ---- MODAL ---- */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
-    .modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:24px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto}
-    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-    .modal-title{font-size:15px;font-weight:700;color:var(--blue);font-family:'Syne',sans-serif}
-    .modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
-
-    /* ---- DETALLE ---- */
-    .detalle-section{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px}
-    .detalle-title{font-size:10px;font-weight:700;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
-    .detalle-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px 14px}
-    .detalle-row{display:flex;gap:6px;align-items:baseline}
-    .detalle-lbl{font-size:10px;color:var(--muted);min-width:120px;flex-shrink:0}
-    .detalle-val{font-size:12px;color:var(--text)}
-
-    /* ---- MISC ---- */
+    /* ===== TOP BAR ===== */
     .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-    .page-title{font-size:17px;font-weight:700;color:#e0f2fe;font-family:'Syne',sans-serif}
-    .num-badge{background:var(--blue-dark);border:1px solid var(--blue-border);border-radius:8px;padding:6px 14px;font-size:13px;color:var(--blue);font-weight:700}
-    .empty{text-align:center;color:var(--muted);padding:44px;font-size:13px}
-    .divider{border:none;border-top:1px solid var(--border);margin:16px 0}
-    .user-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
-    .user-row:last-child{border-bottom:none}
-    .user-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
-    .avatar-admin{background:#fbbf2422;color:var(--yellow);border:1px solid #fbbf2455}
-    .avatar-operario{background:#38bdf822;color:var(--blue);border:1px solid #38bdf855}
-    .user-info{flex:1}
-    .user-name{font-size:13px;font-weight:600}
-    .user-email{font-size:11px;color:var(--muted);margin-top:2px}
+    .page-title{font-size:20px;font-weight:800;color:#e0f4ff}
 
-    @media(max-width:600px){
-      .header{padding:12px 14px}
-      .header-title h1{font-size:13px}
-      .body{padding:14px}
-      .grid{grid-template-columns:1fr 1fr}
-      .detalle-grid{grid-template-columns:1fr}
-      .header-right{gap:6px}
+    /* ===== TABLE ===== */
+    .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px}
+    table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px}
+    th{background:var(--bg);color:var(--muted);padding:10px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid var(--border);white-space:nowrap}
+    td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+    tfoot td{border-top:2px solid var(--border2);font-weight:700}
+    .act{display:flex;gap:6px;flex-wrap:wrap}
+
+    /* ===== STATS GRID ===== */
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:16px}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;position:relative;overflow:hidden}
+    .stat-card::before{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;border-radius:50%;opacity:.1}
+    .stat-card.sc1::before{background:var(--blue)}
+    .stat-card.sc2::before{background:var(--orange)}
+    .stat-card.sc3::before{background:var(--green)}
+    .stat-card.sc4::before{background:var(--pink)}
+    .stat-card.sc5::before{background:var(--purple)}
+    .stat-icon{font-size:22px;margin-bottom:6px}
+    .stat-num{font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1.1}
+    .stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+    .sc1 .stat-num{color:var(--blue)}
+    .sc2 .stat-num{color:var(--orange)}
+    .sc3 .stat-num{color:var(--green)}
+    .sc4 .stat-num{color:var(--pink)}
+    .sc5 .stat-num{color:var(--purple)}
+
+    /* ===== CHARTS ===== */
+    .charts-grid{display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:640px){.charts-grid{grid-template-columns:1fr 1fr}}
+    .chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px}
+    .chart-title{font-size:12px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+    .chart-wrap{position:relative;height:220px}
+
+    /* ===== DESTINOS ===== */
+    .destinos-list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto}
+    .destino-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px}
+    .destino-bar-wrap{flex:1;height:6px;background:var(--border);border-radius:99px;overflow:hidden}
+    .destino-bar{height:100%;background:var(--grad1);border-radius:99px;transition:width .6s ease}
+    .destino-name{font-size:12px;font-weight:600;min-width:100px}
+    .destino-count{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+
+    /* ===== MODAL ===== */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:flex-end;justify-content:center;z-index:300;padding:0}
+    @media(min-width:600px){.modal-overlay{align-items:center;padding:20px}}
+    .modal-box{background:var(--surface);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:720px;max-height:92vh;overflow-y:auto}
+    @media(min-width:600px){.modal-box{border-radius:20px}}
+    .modal-handle{width:36px;height:4px;background:var(--border2);border-radius:99px;margin:0 auto 20px}
+    .modal-title{font-size:17px;font-weight:800;color:#e0f4ff;margin-bottom:16px}
+    .det-sec{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
+    .det-title{font-size:10px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+    .det-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+    .det-row{display:flex;flex-direction:column;gap:2px}
+    .det-lbl{font-size:10px;color:var(--muted)}
+    .det-val{font-size:13px;font-weight:500}
+
+    /* ===== USUARIOS ===== */
+    .user-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+    .user-row:last-child{border-bottom:none}
+    .u-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+    .ua-admin{background:#ffd16622;color:var(--yellow);border:1px solid #ffd16644}
+    .ua-op{background:#3b9eff22;color:var(--blue);border:1px solid #3b9eff44}
+    .u-info{flex:1;min-width:0}
+    .u-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .u-email{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .u-actions{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+
+    /* ===== FILTERS ===== */
+    .filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(min-width:480px){.filter-grid{grid-template-columns:repeat(3,1fr)}}
+
+    /* ===== EMPTY ===== */
+    .empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px}
+    .empty .ei{font-size:40px;display:block;margin-bottom:10px;opacity:.5}
+
+    /* ===== SAFE AREA ===== */
+    .safe-bottom{height:env(safe-area-inset-bottom)}
+
+    @media(max-width:400px){
+      .fgrid{grid-template-columns:1fr 1fr}
+      .h-title{font-size:12px}
     }
   </style>
 </head>
@@ -156,28 +223,31 @@
 
 <!-- LOADING -->
 <div id="loading-screen">
-  <div class="loading-logo">🧪</div>
-  <div style="font-size:13px">Iniciando sistema...</div>
+  <div class="load-icon">🧪</div>
+  <div style="font-size:14px;color:#7a9bb5;font-weight:600">Iniciando sistema...</div>
+  <div class="load-bar"><div class="load-progress"></div></div>
 </div>
 
 <!-- LOGIN -->
-<div id="login-screen" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 40%,#0d2035 0%,#0d1117 70%)">
-  <div class="login-box">
-    <div class="login-logo">
-      <span class="icon">🧪</span>
-      <h1>CONTROL METABISULFITO</h1>
-      <p>Bodega Sta. Rosa</p>
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-header">
+        <span class="login-icon">🧪</span>
+        <div class="login-title">Control Metabisulfito</div>
+        <div class="login-sub">Bodega Sta. Rosa</div>
+      </div>
+      <div id="lerror" class="lerror"></div>
+      <div class="lfield">
+        <label>Correo electrónico</label>
+        <input id="l-email" type="email" placeholder="usuario@empresa.com" inputmode="email" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <div class="lfield">
+        <label>Contraseña</label>
+        <input id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <button class="btn-login" id="btn-login" onclick="doLogin()">INGRESAR AL SISTEMA</button>
     </div>
-    <div id="login-error" class="login-error"></div>
-    <div class="login-field">
-      <label>Correo electrónico</label>
-      <input id="l-email" type="email" placeholder="usuario@empresa.com" onkeydown="if(event.key==='Enter')loginSubmit()"/>
-    </div>
-    <div class="login-field">
-      <label>Contraseña</label>
-      <input id="l-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginSubmit()"/>
-    </div>
-    <button class="btn-login" id="btn-login" onclick="loginSubmit()">INGRESAR</button>
   </div>
 </div>
 
@@ -186,631 +256,773 @@
 
   <!-- HEADER -->
   <div class="header">
-    <div class="logo">🧪</div>
-    <div class="header-title">
-      <h1>CONTROL DE METABISULFITO DE SODIO</h1>
-      <p>Bodega Sta. Rosa · FOR-BOD-05</p>
+    <div class="h-logo">🧪</div>
+    <div class="h-info">
+      <div class="h-title">Control Metabisulfito</div>
+      <div class="h-sub" id="h-user-name">—</div>
     </div>
-    <div class="header-right">
-      <div class="user-badge" id="header-user">—</div>
-      <span id="header-role" class="role-badge role-operario">operario</span>
-      <button class="btn-logout" onclick="logoutUser()">Salir</button>
+    <div class="h-right">
+      <span id="h-role" class="rbadge rbadge-operario">operario</span>
+      <button class="btn-out" onclick="doLogout()">Salir</button>
     </div>
   </div>
 
-  <!-- TABS -->
-  <div class="tabs" id="tabs-bar">
-    <button class="tab-btn active" onclick="switchTab(0)">📋 Nuevo Registro</button>
-    <button class="tab-btn" onclick="switchTab(1)">📁 Registros</button>
-    <!-- Admin tabs added dynamically -->
-  </div>
+  <!-- ALERT -->
+  <div id="alert-box"></div>
 
-  <div class="body">
-    <div id="alert-box"></div>
+  <!-- MAIN CONTENT -->
+  <div class="main">
 
-    <!-- ===== TAB 0: NUEVO REGISTRO ===== -->
+    <!-- ====== TAB 0: NUEVO REGISTRO ====== -->
     <div id="tab-0">
       <div class="top-bar">
         <div class="page-title">Nuevo Despacho</div>
         <div class="num-badge">N° <span id="next-num">00001</span></div>
       </div>
 
-      <div class="section">
-        <div class="section-title">🚛 Información del Transportista</div>
-        <div class="grid">
-          <div class="field"><label>Placa del Vehículo</label><input id="f-placa" type="text" placeholder="ABC-1234"/></div>
-          <div class="field"><label>Nombre del Conductor ★</label><input id="f-conductor" type="text" placeholder="Nombre completo"/></div>
-          <div class="field"><label>Fecha Inicio Transporte</label><input id="f-fechaInicio" type="date"/></div>
+      <div class="card">
+        <div class="card-title">🚛 Transportista</div>
+        <div class="fgrid">
+          <div class="field"><label>Placa del Vehículo</label><input id="f-placa" type="text" placeholder="Ej: ABC-1234" autocomplete="off"/></div>
+          <div class="field"><label>Conductor ★</label><input id="f-conductor" type="text" placeholder="Nombre completo" autocomplete="off"/></div>
+        </div>
+        <div style="height:12px"></div>
+        <div class="fgrid">
+          <div class="field"><label>Fecha Inicio</label><input id="f-fechaInicio" type="date"/></div>
           <div class="field"><label>Hora de Salida</label><input id="f-horaSalida" type="time"/></div>
           <div class="field"><label>Punto de Partida</label><input id="f-puntoPartida" type="text" placeholder="Ej: Bodega Sta. Rosa"/></div>
-          <div class="field"><label>Fecha Fin Transporte</label><input id="f-fechaFin" type="date"/></div>
+          <div class="field"><label>Fecha Fin</label><input id="f-fechaFin" type="date"/></div>
           <div class="field"><label>Hora de Llegada</label><input id="f-horaLlegada" type="time"/></div>
-          <div class="field"><label>Punto de Llegada</label><input id="f-puntoLlegada" type="text"/></div>
-          <div class="field"><label>Ruta del Transporte</label><input id="f-ruta" type="text"/></div>
+          <div class="field"><label>Punto de Llegada</label><input id="f-puntoLlegada" type="text" placeholder="Destino"/></div>
+          <div class="field"><label>Ruta</label><input id="f-ruta" type="text" placeholder="Descripción de ruta"/></div>
           <div class="field"><label>Guía MDI</label><input id="f-guiaMdi" type="text"/></div>
           <div class="field"><label>Lugar de Pesca / Productor</label><input id="f-lugarPesca" type="text"/></div>
-          <div class="field"><label>Nro. Guía Remisión/Pesca</label><input id="f-nroGuia" type="text"/></div>
+          <div class="field"><label>Nro. Guía Remisión</label><input id="f-nroGuia" type="text"/></div>
           <div class="field"><label>Código Recibidor</label><input id="f-codRecibidor" type="text"/></div>
         </div>
       </div>
 
-      <div class="section">
-        <div class="section-title">📦 Despacho de Metabisulfito ★</div>
-        <div class="grid">
+      <div class="card">
+        <div class="card-title">📦 Despacho</div>
+        <div class="fgrid">
           <div class="field"><label>Fecha del Despacho ★</label><input id="f-fechaDespacho" type="date"/></div>
           <div class="field"><label>Solicitado Por</label><input id="f-solicitadoPor" type="text"/></div>
           <div class="field"><label>Despachado Por</label><input id="f-despachador" type="text"/></div>
-          <div class="field"><label>Cantidad de Sacos</label><input id="f-cantSacos" type="number" min="0" placeholder="0"/></div>
-          <div class="field"><label>Cantidad en KG</label><input id="f-cantKg" type="number" min="0" step="0.01" placeholder="0.00"/></div>
+          <div class="field"><label>Cantidad Sacos</label><input id="f-cantSacos" type="number" min="0" placeholder="0" inputmode="decimal"/></div>
+          <div class="field"><label>Cantidad en KG</label><input id="f-cantKg" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal"/></div>
           <div class="field"><label>Lote del Saco</label><input id="f-lote" type="text"/></div>
           <div class="field"><label>Marca del Saco</label><input id="f-marca" type="text"/></div>
           <div class="field"><label>Numeración del Saco</label><input id="f-numSaco" type="text"/></div>
         </div>
       </div>
 
-      <div class="section">
-        <div class="section-title">🔄 Devolución de Metabisulfito</div>
-        <div class="grid">
-          <div class="field"><label>Fecha de Devolución</label><input id="f-fechaDev" type="date"/></div>
-          <div class="field"><label>Devolución Cantidad Sacos</label><input id="f-devSacos" type="number" min="0" placeholder="0"/></div>
-          <div class="field"><label>Devolución Cantidad KG</label><input id="f-devKg" type="number" min="0" step="0.01" placeholder="0.00"/></div>
-          <div class="field"><label>Devolución Numeración Saco</label><input id="f-devNumSaco" type="text"/></div>
+      <div class="card">
+        <div class="card-title">🔄 Devolución</div>
+        <div class="fgrid">
+          <div class="field"><label>Fecha Devolución</label><input id="f-fechaDev" type="date"/></div>
+          <div class="field"><label>Sacos Devueltos</label><input id="f-devSacos" type="number" min="0" placeholder="0" inputmode="decimal"/></div>
+          <div class="field"><label>KG Devueltos</label><input id="f-devKg" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal"/></div>
+          <div class="field"><label>Numeración Saco Dev.</label><input id="f-devNumSaco" type="text"/></div>
         </div>
       </div>
 
-      <div class="section">
-        <div class="section-title">📝 Observaciones</div>
-        <div class="field"><textarea id="f-obs" placeholder="Observaciones adicionales..." style="width:100%"></textarea></div>
+      <div class="card">
+        <div class="card-title">📝 Observaciones</div>
+        <div class="field"><textarea id="f-obs" placeholder="Observaciones adicionales..."></textarea></div>
       </div>
 
-      <button class="btn-primary" id="btn-guardar" onclick="guardarRegistro()">✅ GUARDAR REGISTRO</button>
+      <button class="btn btn-primary" id="btn-guardar" onclick="guardarRegistro()">
+        ✅ GUARDAR REGISTRO
+      </button>
+      <div style="height:8px"></div>
     </div>
 
-    <!-- ===== TAB 1: REGISTROS (solo admin) ===== -->
+    <!-- ====== TAB 1: DASHBOARD (admin) ====== -->
     <div id="tab-1" style="display:none">
       <div class="top-bar">
-        <div class="page-title">Historial de Registros</div>
-        <button class="btn-secondary" onclick="cargarTodo()">🔄 Actualizar</button>
+        <div class="page-title">Dashboard</div>
+        <button class="btn btn-sm btn-ghost" onclick="cargarTodo()">🔄 Actualizar</button>
       </div>
-      <div class="section">
-        <div id="tabla-registros"><div class="empty">Cargando...</div></div>
+
+      <div class="stats-row">
+        <div class="stat-card sc1"><div class="stat-icon">📋</div><div class="stat-num" id="s-total">0</div><div class="stat-label">Despachos</div></div>
+        <div class="stat-card sc2"><div class="stat-icon">📦</div><div class="stat-num" id="s-sacos">0</div><div class="stat-label">Sacos</div></div>
+        <div class="stat-card sc3"><div class="stat-icon">⬆️</div><div class="stat-num" id="s-kgd">0</div><div class="stat-label">KG Desp.</div></div>
+        <div class="stat-card sc4"><div class="stat-icon">⬇️</div><div class="stat-num" id="s-kgv">0</div><div class="stat-label">KG Dev.</div></div>
+        <div class="stat-card sc5"><div class="stat-icon">🔥</div><div class="stat-num" id="s-kgu">0</div><div class="stat-label">KG Usados</div></div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">📊 KG Despachados vs Devueltos por Mes</div>
+          <div class="chart-wrap"><canvas id="chart-mensual"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">📅 Sacos por Fecha</div>
+          <div class="chart-wrap"><canvas id="chart-sacos"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-grid" style="margin-top:14px">
+        <div class="chart-card">
+          <div class="chart-title">📈 KG Utilizados Acumulados</div>
+          <div class="chart-wrap"><canvas id="chart-acum"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">📍 Destinos / Lugares de Pesca</div>
+          <div id="chart-destinos" class="destinos-list"></div>
+        </div>
       </div>
     </div>
 
-    <!-- ===== TAB 2: REPORTES (solo admin) ===== -->
+    <!-- ====== TAB 2: REGISTROS (admin) ====== -->
     <div id="tab-2" style="display:none">
-      <div class="page-title" style="margin-bottom:16px">Reportes y Estadísticas</div>
-      <div class="section">
-        <div class="section-title">🔍 Filtros</div>
-        <div class="grid">
-          <div class="field"><label>Fecha desde</label><input id="r-desde" type="date" oninput="aplicarFiltros()"/></div>
-          <div class="field"><label>Fecha hasta</label><input id="r-hasta" type="date" oninput="aplicarFiltros()"/></div>
-          <div class="field"><label>Conductor</label><input id="r-conductor" type="text" placeholder="Buscar..." oninput="aplicarFiltros()"/></div>
-          <div class="field"><label>Solicitado Por</label><input id="r-solicitado" type="text" placeholder="Buscar..." oninput="aplicarFiltros()"/></div>
+      <div class="top-bar">
+        <div class="page-title">Registros</div>
+        <button class="btn btn-sm btn-ghost" onclick="cargarTodo()">🔄</button>
+      </div>
+      <div class="card">
+        <div id="tabla-registros"><div class="empty"><span class="ei">📋</span>Cargando...</div></div>
+      </div>
+    </div>
+
+    <!-- ====== TAB 3: REPORTES (admin) ====== -->
+    <div id="tab-3" style="display:none">
+      <div class="top-bar"><div class="page-title">Reportes</div></div>
+      <div class="card">
+        <div class="card-title">🔍 Filtros</div>
+        <div class="filter-grid">
+          <div class="field"><label>Desde</label><input id="r-desde" type="date" oninput="aplicarFiltros()"/></div>
+          <div class="field"><label>Hasta</label><input id="r-hasta" type="date" oninput="aplicarFiltros()"/></div>
+          <div class="field"><label>Conductor</label><input id="r-cond" type="text" placeholder="Buscar..." oninput="aplicarFiltros()"/></div>
+          <div class="field"><label>Solicitado Por</label><input id="r-soli" type="text" placeholder="Buscar..." oninput="aplicarFiltros()"/></div>
           <div class="field"><label>Lugar de Pesca</label><input id="r-lugar" type="text" placeholder="Buscar..." oninput="aplicarFiltros()"/></div>
         </div>
-        <div style="margin-top:12px"><button class="btn-secondary" onclick="limpiarFiltros()">✕ Limpiar filtros</button></div>
+        <div style="margin-top:12px"><button class="btn btn-sm btn-ghost" onclick="limpiarFiltros()">✕ Limpiar</button></div>
       </div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-num" id="s-despachos">0</div><div class="stat-label">Despachos</div></div>
-        <div class="stat-card"><div class="stat-num" id="s-sacos">0</div><div class="stat-label">Total Sacos</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:var(--orange)" id="s-kgdesp">0 kg</div><div class="stat-label">KG Despachados</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="s-kgdev">0 kg</div><div class="stat-label">KG Devueltos</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:var(--pink)" id="s-kguso">0 kg</div><div class="stat-label">KG Utilizados</div></div>
+      <div class="stats-row">
+        <div class="stat-card sc1"><div class="stat-num" id="rs-total">0</div><div class="stat-label">Despachos</div></div>
+        <div class="stat-card sc2"><div class="stat-num" id="rs-sacos">0</div><div class="stat-label">Sacos</div></div>
+        <div class="stat-card sc3"><div class="stat-num" id="rs-kgd">0 kg</div><div class="stat-label">KG Desp.</div></div>
+        <div class="stat-card sc4"><div class="stat-num" id="rs-kgv">0 kg</div><div class="stat-label">KG Dev.</div></div>
+        <div class="stat-card sc5"><div class="stat-num" id="rs-kgu">0 kg</div><div class="stat-label">KG Usados</div></div>
       </div>
-      <div class="section">
-        <div class="section-title">📋 Detalle del Período</div>
-        <div id="tabla-reporte"><div class="empty">Aplica filtros para ver el reporte</div></div>
+      <div class="card">
+        <div class="card-title">📋 Detalle</div>
+        <div id="tabla-reporte"><div class="empty"><span class="ei">🔍</span>Aplica filtros</div></div>
       </div>
     </div>
 
-    <!-- ===== TAB 3: USUARIOS (solo admin) ===== -->
-    <div id="tab-3" style="display:none">
-      <div class="top-bar">
-        <div class="page-title">Gestión de Usuarios</div>
-      </div>
-
-      <!-- CREAR USUARIO -->
-      <div class="section">
-        <div class="section-title">➕ Crear Nuevo Usuario</div>
-        <div class="grid">
-          <div class="field"><label>Nombre completo</label><input id="u-nombre" type="text" placeholder="Nombre del usuario"/></div>
-          <div class="field"><label>Correo electrónico</label><input id="u-email" type="email" placeholder="correo@empresa.com"/></div>
-          <div class="field"><label>Contraseña temporal</label><input id="u-pass" type="text" placeholder="Mínimo 6 caracteres"/></div>
+    <!-- ====== TAB 4: USUARIOS (admin) ====== -->
+    <div id="tab-4" style="display:none">
+      <div class="top-bar"><div class="page-title">Usuarios</div></div>
+      <div class="card">
+        <div class="card-title">➕ Crear Usuario</div>
+        <div class="fgrid">
+          <div class="field"><label>Nombre completo</label><input id="u-nombre" type="text" placeholder="Nombre"/></div>
+          <div class="field"><label>Correo electrónico</label><input id="u-email" type="email" placeholder="correo@empresa.com" inputmode="email"/></div>
+          <div class="field"><label>Contraseña temporal</label><input id="u-pass" type="text" placeholder="Mín. 6 caracteres"/></div>
           <div class="field">
             <label>Rol</label>
             <select id="u-rol">
-              <option value="operario">Operario — Solo ingreso de datos</option>
-              <option value="admin">Admin — Acceso completo</option>
+              <option value="operario">Operario</option>
+              <option value="admin">Admin</option>
             </select>
           </div>
         </div>
         <div style="margin-top:14px">
-          <button class="btn-primary" id="btn-crear-user" onclick="crearUsuario()">➕ CREAR USUARIO</button>
+          <button class="btn btn-primary" id="btn-crear" onclick="crearUsuario()" style="max-width:260px">➕ CREAR USUARIO</button>
         </div>
       </div>
-
-      <!-- LISTA USUARIOS -->
-      <div class="section">
-        <div class="section-title">👥 Usuarios del Sistema</div>
-        <div id="lista-usuarios"><div class="empty">Cargando usuarios...</div></div>
+      <div class="card">
+        <div class="card-title">👥 Usuarios Registrados</div>
+        <div id="lista-usuarios"><div class="empty">Cargando...</div></div>
       </div>
     </div>
 
-  </div><!-- /body -->
+  </div><!-- /main -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-btn active" id="nav-0" onclick="switchTab(0)"><span class="ni">📋</span>Ingresar</button>
+    <!-- admin navs added dynamically -->
+  </nav>
+
 </div><!-- /app -->
 
-<!-- MODAL DETALLE -->
-<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target.id==='modal')document.getElementById('modal').style.display='none'">
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target.id==='modal')closeModal()">
   <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title">Detalle del Registro</div>
-      <button class="modal-close" onclick="document.getElementById('modal').style.display='none'">✕</button>
-    </div>
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">Detalle</div>
     <div id="modal-body"></div>
+    <div style="height:8px"></div>
+    <button class="btn btn-ghost btn-sm" onclick="closeModal()" style="width:100%">Cerrar</button>
   </div>
 </div>
 
+<!-- PWA SERVICE WORKER INLINE -->
+<script>
+if('serviceWorker' in navigator){
+  const sw=`
+    const CACHE='metabisulfito-v1';
+    self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','/index.html']))));
+    self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>caches.match(e.request))));
+  `;
+  const blob=new Blob([sw],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob));
+}
+</script>
+
 <!-- FIREBASE -->
 <script type="module">
-import { initializeApp }             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc, query, orderBy, updateDoc }
-                                      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc,
+         setDoc, getDoc, query, orderBy, updateDoc }
+                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          signOut, onAuthStateChanged }
-                                      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// ---- CONFIG ----
-const firebaseConfig = {
-  apiKey: "AIzaSyA8Wvcv3MQNYJT-LNm3UBjG4ta1u-OwrGI",
-  authDomain: "lector-qr-25878.firebaseapp.com",
-  projectId: "lector-qr-25878",
-  storageBucket: "lector-qr-25878.firebasestorage.app",
-  messagingSenderId: "8007483133",
-  appId: "1:8007483133:web:60b74409d146ad8a0bc894"
+const FB = {
+  apiKey:"AIzaSyA8Wvcv3MQNYJT-LNm3UBjG4ta1u-OwrGI",
+  authDomain:"lector-qr-25878.firebaseapp.com",
+  projectId:"lector-qr-25878",
+  storageBucket:"lector-qr-25878.firebasestorage.app",
+  messagingSenderId:"8007483133",
+  appId:"1:8007483133:web:60b74409d146ad8a0bc894"
 };
+const fbApp = initializeApp(FB);
+const db    = getFirestore(fbApp);
+const auth  = getAuth(fbApp);
+const CDESP = "metabisulfito_despachos";
+const CUSR  = "metabisulfito_usuarios";
 
-const app  = initializeApp(firebaseConfig);
-const db   = getFirestore(app);
-const auth = getAuth(app);
-const COL_DESPACHOS = "metabisulfito_despachos";
-const COL_USUARIOS  = "metabisulfito_usuarios";
+let curUser=null, curRole=null, curNombre="";
+let allReg=[], nextNum=1;
+let chartMensual=null, chartSacos=null, chartAcum=null;
 
-let currentUser   = null;   // Firebase Auth user
-let currentRole   = null;   // "admin" | "operario"
-let currentNombre = "";
-let todosRegistros = [];
-let nextNum = 1;
-
-// ============================================================
-//  AUTH STATE
-// ============================================================
-onAuthStateChanged(auth, async (user) => {
+// ─── AUTH STATE ───
+onAuthStateChanged(auth, async user=>{
   hide("loading-screen");
-  if (!user) {
-    show("login-screen", "flex");
-    return;
-  }
-  // Obtener rol desde Firestore
-  try {
-    const snap = await getDoc(doc(db, COL_USUARIOS, user.uid));
-    if (!snap.exists()) {
-      // Usuario no registrado en el sistema (no debería pasar)
-      await signOut(auth);
-      showLoginError("Tu cuenta no está registrada en el sistema.");
-      show("login-screen", "flex");
-      return;
-    }
-    const data = snap.data();
-    if (data.activo === false) {
-      await signOut(auth);
-      showLoginError("Tu cuenta está desactivada. Contacta al administrador.");
-      show("login-screen", "flex");
-      return;
-    }
-    currentUser   = user;
-    currentRole   = data.rol;
-    currentNombre = data.nombre || user.email;
+  if(!user){ show("login-screen","flex"); return; }
+  try{
+    const snap=await getDoc(doc(db,CUSR,user.uid));
+    if(!snap.exists()){ await signOut(auth); showLoginErr("Cuenta no registrada."); show("login-screen","flex"); return; }
+    const d=snap.data();
+    if(d.activo===false){ await signOut(auth); showLoginErr("Cuenta desactivada. Contacta al admin."); show("login-screen","flex"); return; }
+    curUser=user; curRole=d.rol; curNombre=d.nombre||user.email;
     initApp();
-  } catch(e) {
-    hide("loading-screen");
-    show("login-screen", "flex");
-    showLoginError("Error al verificar usuario: " + e.message);
-  }
+  }catch(e){ hide("loading-screen"); show("login-screen","flex"); showLoginErr("Error: "+e.message); }
 });
 
-// ============================================================
-//  LOGIN
-// ============================================================
-window.loginSubmit = async function() {
-  const email = document.getElementById("l-email").value.trim();
-  const pass  = document.getElementById("l-pass").value;
-  if (!email || !pass) { showLoginError("Ingresa correo y contraseña."); return; }
-  const btn = document.getElementById("btn-login");
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Ingresando...';
-  document.getElementById("login-error").style.display = "none";
-  try {
-    await signInWithEmailAndPassword(auth, email, pass);
-  } catch(e) {
-    let msg = "Correo o contraseña incorrectos.";
-    if (e.code === "auth/too-many-requests") msg = "Demasiados intentos. Intenta más tarde.";
-    showLoginError(msg);
-    btn.disabled = false; btn.textContent = "INGRESAR";
+// ─── LOGIN ───
+window.doLogin=async function(){
+  const email=g("l-email").value.trim(), pass=g("l-pass").value;
+  if(!email||!pass){showLoginErr("Ingresa correo y contraseña.");return;}
+  const btn=g("btn-login"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Ingresando...';
+  g("lerror").style.display="none";
+  try{ await signInWithEmailAndPassword(auth,email,pass); }
+  catch(e){
+    let m="Correo o contraseña incorrectos.";
+    if(e.code==="auth/too-many-requests") m="Demasiados intentos. Espera unos minutos.";
+    showLoginErr(m); btn.disabled=false; btn.textContent="INGRESAR AL SISTEMA";
   }
 };
-
-window.logoutUser = async function() {
-  await signOut(auth);
-  currentUser = currentRole = null;
-  todosRegistros = [];
-  hide("app-screen");
-  show("login-screen", "flex");
+window.doLogout=async function(){
+  await signOut(auth); curUser=curRole=null; allReg=[];
+  hide("app-screen"); show("login-screen","flex");
 };
 
-// ============================================================
-//  INIT APP
-// ============================================================
-async function initApp() {
-  hide("login-screen");
-  show("app-screen", "block");
-  // Header
-  document.getElementById("header-user").textContent = currentNombre;
-  const rb = document.getElementById("header-role");
-  rb.textContent = currentRole;
-  rb.className = "role-badge " + (currentRole === "admin" ? "role-admin" : "role-operario");
-
-  // Tabs según rol
-  const tabs = document.getElementById("tabs-bar");
-  if (currentRole === "admin") {
-    tabs.innerHTML = `
-      <button class="tab-btn active" onclick="switchTab(0)">📋 Nuevo Registro</button>
-      <button class="tab-btn" onclick="switchTab(1)">📁 Registros</button>
-      <button class="tab-btn" onclick="switchTab(2)">📊 Reportes</button>
-      <button class="tab-btn" onclick="switchTab(3)">👥 Usuarios</button>`;
+// ─── INIT APP ───
+async function initApp(){
+  hide("login-screen"); show("app-screen","block");
+  g("h-user-name").textContent=curNombre;
+  const rb=g("h-role"); rb.textContent=curRole;
+  rb.className="rbadge "+(curRole==="admin"?"rbadge-admin":"rbadge-operario");
+  // Build nav
+  const nav=g("bottom-nav");
+  if(curRole==="admin"){
+    nav.innerHTML=`
+      <button class="nav-btn active" id="nav-0" onclick="switchTab(0)"><span class="ni">📋</span>Ingresar</button>
+      <button class="nav-btn" id="nav-1" onclick="switchTab(1)"><span class="ni">📊</span>Dashboard</button>
+      <button class="nav-btn" id="nav-2" onclick="switchTab(2)"><span class="ni">📁</span>Registros</button>
+      <button class="nav-btn" id="nav-3" onclick="switchTab(3)"><span class="ni">📈</span>Reportes</button>
+      <button class="nav-btn" id="nav-4" onclick="switchTab(4)"><span class="ni">👥</span>Usuarios</button>`;
   } else {
-    tabs.innerHTML = `<button class="tab-btn active" onclick="switchTab(0)">📋 Nuevo Registro</button>`;
+    nav.innerHTML=`<button class="nav-btn active" id="nav-0" onclick="switchTab(0)"><span class="ni">📋</span>Ingresar</button>`;
   }
   switchTab(0);
   await cargarTodo();
 }
 
-// ============================================================
-//  CARGAR DATOS
-// ============================================================
-window.cargarTodo = async function() {
-  try {
-    const q = query(collection(db, COL_DESPACHOS), orderBy("createdAt","desc"));
-    const snap = await getDocs(q);
-    todosRegistros = snap.docs.map(d => ({id: d.id, ...d.data()}));
-    nextNum = todosRegistros.length > 0
-      ? Math.max(...todosRegistros.map(r => parseInt(r.numeracion)||0)) + 1 : 1;
-    document.getElementById("next-num").textContent = String(nextNum).padStart(5,"0");
-    if (currentRole === "admin") {
+// ─── CARGAR DATOS ───
+window.cargarTodo=async function(){
+  try{
+    const q=query(collection(db,CDESP),orderBy("createdAt","desc"));
+    const snap=await getDocs(q);
+    allReg=snap.docs.map(d=>({id:d.id,...d.data()}));
+    nextNum=allReg.length>0?Math.max(...allReg.map(r=>parseInt(r.numeracion)||0))+1:1;
+    g("next-num").textContent=String(nextNum).padStart(5,"0");
+    if(curRole==="admin"){
+      renderDashboard();
       renderTabla();
       aplicarFiltros();
       cargarUsuarios();
     }
-  } catch(e) {
-    showAlert("Error al cargar datos: " + e.message, "error");
-  }
+  }catch(e){ showAlert("Error al cargar: "+e.message,"error"); }
 };
 
-// ============================================================
-//  GUARDAR REGISTRO
-// ============================================================
-window.guardarRegistro = async function() {
-  const conductor     = document.getElementById("f-conductor").value.trim();
-  const fechaDespacho = document.getElementById("f-fechaDespacho").value;
-  if (!conductor || !fechaDespacho) {
-    showAlert("Campos obligatorios: Conductor ★ y Fecha del Despacho ★", "error"); return;
-  }
-  const btn = document.getElementById("btn-guardar");
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Guardando...';
-  try {
-    const reg = {
-      numeracion: String(nextNum).padStart(5,"0"),
-      ingresadoPor: currentNombre,
-      ingresadoPorUid: currentUser.uid,
-      placa:          v("f-placa"),
-      conductor,
-      fechaInicio:    v("f-fechaInicio"),
-      horaSalida:     v("f-horaSalida"),
-      puntoPartida:   v("f-puntoPartida"),
-      fechaFin:       v("f-fechaFin"),
-      horaLlegada:    v("f-horaLlegada"),
-      puntoLlegada:   v("f-puntoLlegada"),
-      ruta:           v("f-ruta"),
-      guiaMdi:        v("f-guiaMdi"),
-      lugarPesca:     v("f-lugarPesca"),
-      nroGuia:        v("f-nroGuia"),
-      codRecibidor:   v("f-codRecibidor"),
-      fechaDespacho,
-      solicitadoPor:  v("f-solicitadoPor"),
-      despachador:    v("f-despachador"),
-      cantSacos:      parseFloat(v("f-cantSacos"))||0,
-      cantKg:         parseFloat(v("f-cantKg"))||0,
-      lote:           v("f-lote"),
-      marca:          v("f-marca"),
-      numSaco:        v("f-numSaco"),
-      fechaDev:       v("f-fechaDev"),
-      devSacos:       parseFloat(v("f-devSacos"))||0,
-      devKg:          parseFloat(v("f-devKg"))||0,
-      devNumSaco:     v("f-devNumSaco"),
-      observacion:    v("f-obs"),
-      createdAt:      new Date().toISOString()
+// ─── GUARDAR ───
+window.guardarRegistro=async function(){
+  const conductor=v("f-conductor"), fechaDespacho=v("f-fechaDespacho");
+  if(!conductor||!fechaDespacho){showAlert("Faltan campos obligatorios: Conductor ★ y Fecha del Despacho ★","error");return;}
+  const btn=g("btn-guardar"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Guardando en Firebase...';
+  try{
+    const reg={
+      numeracion:String(nextNum).padStart(5,"0"),
+      ingresadoPor:curNombre, ingresadoPorUid:curUser.uid,
+      placa:v("f-placa"), conductor, fechaInicio:v("f-fechaInicio"),
+      horaSalida:v("f-horaSalida"), puntoPartida:v("f-puntoPartida"),
+      fechaFin:v("f-fechaFin"), horaLlegada:v("f-horaLlegada"),
+      puntoLlegada:v("f-puntoLlegada"), ruta:v("f-ruta"),
+      guiaMdi:v("f-guiaMdi"), lugarPesca:v("f-lugarPesca"),
+      nroGuia:v("f-nroGuia"), codRecibidor:v("f-codRecibidor"),
+      fechaDespacho, solicitadoPor:v("f-solicitadoPor"),
+      despachador:v("f-despachador"),
+      cantSacos:parseFloat(v("f-cantSacos"))||0,
+      cantKg:parseFloat(v("f-cantKg"))||0,
+      lote:v("f-lote"), marca:v("f-marca"), numSaco:v("f-numSaco"),
+      fechaDev:v("f-fechaDev"),
+      devSacos:parseFloat(v("f-devSacos"))||0,
+      devKg:parseFloat(v("f-devKg"))||0,
+      devNumSaco:v("f-devNumSaco"), observacion:v("f-obs"),
+      createdAt:new Date().toISOString()
     };
-    await addDoc(collection(db, COL_DESPACHOS), reg);
-    limpiarFormulario();
+    await addDoc(collection(db,CDESP),reg);
+    generarPDF(reg);
+    limpiarForm();
     await cargarTodo();
-    showAlert("✅ Registro N° " + reg.numeracion + " guardado correctamente.", "success");
-  } catch(e) {
-    showAlert("Error al guardar: " + e.message, "error");
-  }
-  btn.disabled = false; btn.textContent = "✅ GUARDAR REGISTRO";
+    showAlert("✅ Registro N° "+reg.numeracion+" guardado. PDF generado automáticamente.","success");
+  }catch(e){ showAlert("Error: "+e.message,"error"); }
+  btn.disabled=false; btn.textContent="✅ GUARDAR REGISTRO";
 };
 
-// ============================================================
-//  ELIMINAR REGISTRO
-// ============================================================
-window.eliminarRegistro = async function(id) {
-  if (!confirm("¿Eliminar este registro permanentemente?")) return;
-  try {
-    await deleteDoc(doc(db, COL_DESPACHOS, id));
-    await cargarTodo();
-    showAlert("Registro eliminado.", "info");
-  } catch(e) {
-    showAlert("Error: " + e.message, "error");
-  }
+// ─── ELIMINAR ───
+window.eliminarRegistro=async function(id){
+  if(!confirm("¿Eliminar este registro?")) return;
+  try{ await deleteDoc(doc(db,CDESP,id)); await cargarTodo(); showAlert("Registro eliminado.","info"); }
+  catch(e){ showAlert("Error: "+e.message,"error"); }
 };
 
-// ============================================================
-//  RENDER TABLA REGISTROS
-// ============================================================
-function renderTabla() {
-  const wrap = document.getElementById("tabla-registros");
-  if (!todosRegistros.length) {
-    wrap.innerHTML = '<div class="empty">No hay registros aún.</div>'; return;
-  }
-  wrap.innerHTML = `<div class="table-wrap"><table>
-    <thead><tr>
-      <th>N°</th><th>Fecha</th><th>Conductor</th><th>Placa</th>
-      <th>Lugar Pesca</th><th>Sacos</th><th>KG Desp.</th><th>KG Dev.</th>
-      <th>Ingresado Por</th><th>Acciones</th>
-    </tr></thead>
-    <tbody>${todosRegistros.map(r=>`<tr>
-      <td><span class="badge badge-blue">${r.numeracion}</span></td>
-      <td>${r.fechaDespacho||"—"}</td>
-      <td>${r.conductor||"—"}</td>
-      <td>${r.placa||"—"}</td>
-      <td>${r.lugarPesca||"—"}</td>
-      <td>${r.cantSacos||"—"}</td>
+// ─── DASHBOARD ───
+function renderDashboard(){
+  const tkd=allReg.reduce((s,r)=>s+(r.cantKg||0),0);
+  const tkv=allReg.reduce((s,r)=>s+(r.devKg||0),0);
+  const ts=allReg.reduce((s,r)=>s+(r.cantSacos||0),0);
+  g("s-total").textContent=allReg.length;
+  g("s-sacos").textContent=ts;
+  g("s-kgd").textContent=tkd.toFixed(1)+" kg";
+  g("s-kgv").textContent=tkv.toFixed(1)+" kg";
+  g("s-kgu").textContent=(tkd-tkv).toFixed(1)+" kg";
+  buildChartMensual(); buildChartSacos(); buildChartAcum(); buildDestinos();
+}
+
+function buildChartMensual(){
+  const map={};
+  allReg.forEach(r=>{
+    if(!r.fechaDespacho) return;
+    const k=r.fechaDespacho.slice(0,7);
+    if(!map[k]) map[k]={d:0,v:0};
+    map[k].d+=r.cantKg||0; map[k].v+=r.devKg||0;
+  });
+  const labels=Object.keys(map).sort().slice(-8);
+  const desp=labels.map(k=>+map[k].d.toFixed(1));
+  const dev=labels.map(k=>+map[k].v.toFixed(1));
+  const ctx=g("chart-mensual").getContext("2d");
+  if(chartMensual) chartMensual.destroy();
+  chartMensual=new Chart(ctx,{
+    type:"bar",
+    data:{labels:labels.map(l=>{ const[y,m]=l.split("-"); return["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][parseInt(m)-1]+"/"+y.slice(2); }),
+      datasets:[
+        {label:"KG Despachados",data:desp,backgroundColor:"#3b9eff88",borderColor:"#3b9eff",borderWidth:2,borderRadius:6},
+        {label:"KG Devueltos",data:dev,backgroundColor:"#10e89a88",borderColor:"#10e89a",borderWidth:2,borderRadius:6}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#7a9bb5",font:{size:10}}}},scales:{x:{ticks:{color:"#7a9bb5",font:{size:10}},grid:{color:"#1f3347"}},y:{ticks:{color:"#7a9bb5",font:{size:10}},grid:{color:"#1f3347"}}}}
+  });
+}
+
+function buildChartSacos(){
+  const map={};
+  allReg.forEach(r=>{ if(!r.fechaDespacho) return; map[r.fechaDespacho]=(map[r.fechaDespacho]||0)+(r.cantSacos||0); });
+  const labels=Object.keys(map).sort().slice(-10);
+  const data=labels.map(k=>map[k]);
+  const ctx=g("chart-sacos").getContext("2d");
+  if(chartSacos) chartSacos.destroy();
+  chartSacos=new Chart(ctx,{
+    type:"line",
+    data:{labels,datasets:[{label:"Sacos",data,fill:true,backgroundColor:"#a78bfa22",borderColor:"#a78bfa",borderWidth:2,tension:.4,pointBackgroundColor:"#a78bfa",pointRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#7a9bb5",font:{size:10}}}},scales:{x:{ticks:{color:"#7a9bb5",font:{size:9},maxRotation:40},grid:{color:"#1f3347"}},y:{ticks:{color:"#7a9bb5",font:{size:10}},grid:{color:"#1f3347"}}}}
+  });
+}
+
+function buildChartAcum(){
+  const sorted=[...allReg].filter(r=>r.fechaDespacho).sort((a,b)=>a.fechaDespacho.localeCompare(b.fechaDespacho));
+  let acum=0;
+  const labels=[], data=[];
+  sorted.forEach(r=>{ acum+=(r.cantKg||0)-(r.devKg||0); labels.push(r.fechaDespacho); data.push(+acum.toFixed(1)); });
+  const ctx=g("chart-acum").getContext("2d");
+  if(chartAcum) chartAcum.destroy();
+  chartAcum=new Chart(ctx,{
+    type:"line",
+    data:{labels:labels.slice(-20),datasets:[{label:"KG Utilizados Acum.",data:data.slice(-20),fill:true,backgroundColor:"#ff8c4222",borderColor:"#ff8c42",borderWidth:2,tension:.4,pointRadius:3,pointBackgroundColor:"#ff8c42"}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#7a9bb5",font:{size:10}}}},scales:{x:{ticks:{color:"#7a9bb5",font:{size:9},maxRotation:40},grid:{color:"#1f3347"}},y:{ticks:{color:"#7a9bb5",font:{size:10}},grid:{color:"#1f3347"}}}}
+  });
+}
+
+function buildDestinos(){
+  const map={};
+  allReg.forEach(r=>{ if(r.lugarPesca) map[r.lugarPesca]=(map[r.lugarPesca]||0)+1; });
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const max=sorted[0]?.[1]||1;
+  const wrap=g("chart-destinos");
+  if(!sorted.length){ wrap.innerHTML='<div class="empty" style="padding:20px">Sin datos de destinos</div>'; return; }
+  wrap.innerHTML=sorted.map(([n,c])=>`
+    <div class="destino-row">
+      <div class="destino-name">${n}</div>
+      <div class="destino-bar-wrap"><div class="destino-bar" style="width:${(c/max*100).toFixed(0)}%"></div></div>
+      <div class="destino-count">${c} desp.</div>
+    </div>`).join("");
+}
+
+// ─── RENDER TABLA ───
+function renderTabla(){
+  const wrap=g("tabla-registros");
+  if(!allReg.length){ wrap.innerHTML='<div class="empty"><span class="ei">📋</span>Sin registros aún</div>'; return; }
+  wrap.innerHTML=`<div class="tbl-wrap"><table>
+    <thead><tr><th>N°</th><th>Fecha</th><th>Conductor</th><th>Placa</th><th>Lugar Pesca</th><th>Sacos</th><th>KG D.</th><th>KG Dev.</th><th>Por</th><th>Acc.</th></tr></thead>
+    <tbody>${allReg.map(r=>`<tr>
+      <td><span class="badge b-blue">${r.numeracion}</span></td>
+      <td style="white-space:nowrap">${r.fechaDespacho||"—"}</td>
+      <td>${r.conductor||"—"}</td><td>${r.placa||"—"}</td>
+      <td>${r.lugarPesca||"—"}</td><td>${r.cantSacos||"—"}</td>
       <td>${r.cantKg?r.cantKg+" kg":"—"}</td>
-      <td>${r.devKg?'<span class="badge badge-green">'+r.devKg+' kg</span>':'<span style="color:var(--muted)">—</span>'}</td>
-      <td><span style="font-size:11px;color:var(--muted)">${r.ingresadoPor||"—"}</span></td>
-      <td><div class="actions">
-        <button class="btn-info" onclick="verDetalle('${r.id}')">Ver</button>
-        <button class="btn-danger" onclick="eliminarRegistro('${r.id}')">Eliminar</button>
+      <td>${r.devKg?'<span class="badge b-green">'+r.devKg+' kg</span>':'<span style="color:var(--muted)">—</span>'}</td>
+      <td style="font-size:11px;color:var(--muted)">${r.ingresadoPor||"—"}</td>
+      <td><div class="act">
+        <button class="btn btn-sm btn-info" onclick="verDetalle('${r.id}')">Ver</button>
+        <button class="btn btn-sm btn-info" onclick="pdfRegistro('${r.id}')">PDF</button>
+        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('${r.id}')">🗑</button>
       </div></td>
     </tr>`).join("")}
     </tbody></table></div>`;
 }
 
-// ============================================================
-//  FILTROS / REPORTES
-// ============================================================
-window.aplicarFiltros = function() {
-  const desde     = document.getElementById("r-desde").value;
-  const hasta     = document.getElementById("r-hasta").value;
-  const conductor = document.getElementById("r-conductor").value.toLowerCase();
-  const solicitado= document.getElementById("r-solicitado").value.toLowerCase();
-  const lugar     = document.getElementById("r-lugar").value.toLowerCase();
-
-  const f = todosRegistros.filter(r=>{
-    if(desde && r.fechaDespacho < desde) return false;
-    if(hasta && r.fechaDespacho > hasta) return false;
-    if(conductor && !(r.conductor||"").toLowerCase().includes(conductor)) return false;
-    if(solicitado && !(r.solicitadoPor||"").toLowerCase().includes(solicitado)) return false;
-    if(lugar && !(r.lugarPesca||"").toLowerCase().includes(lugar)) return false;
+// ─── FILTROS ───
+window.aplicarFiltros=function(){
+  const desde=g("r-desde").value, hasta=g("r-hasta").value;
+  const cond=g("r-cond").value.toLowerCase(), soli=g("r-soli").value.toLowerCase(), lugar=g("r-lugar").value.toLowerCase();
+  const f=allReg.filter(r=>{
+    if(desde&&r.fechaDespacho<desde) return false;
+    if(hasta&&r.fechaDespacho>hasta) return false;
+    if(cond&&!(r.conductor||"").toLowerCase().includes(cond)) return false;
+    if(soli&&!(r.solicitadoPor||"").toLowerCase().includes(soli)) return false;
+    if(lugar&&!(r.lugarPesca||"").toLowerCase().includes(lugar)) return false;
     return true;
   });
-
-  const tkd  = f.reduce((s,r)=>s+(r.cantKg||0),0);
-  const tkv  = f.reduce((s,r)=>s+(r.devKg||0),0);
-  const ts   = f.reduce((s,r)=>s+(r.cantSacos||0),0);
-
-  document.getElementById("s-despachos").textContent = f.length;
-  document.getElementById("s-sacos").textContent     = ts;
-  document.getElementById("s-kgdesp").textContent    = tkd.toFixed(1)+" kg";
-  document.getElementById("s-kgdev").textContent     = tkv.toFixed(1)+" kg";
-  document.getElementById("s-kguso").textContent     = (tkd-tkv).toFixed(1)+" kg";
-
-  const wrap = document.getElementById("tabla-reporte");
-  if(!f.length){ wrap.innerHTML='<div class="empty">Sin resultados.</div>'; return; }
-  wrap.innerHTML = `<div class="table-wrap"><table>
-    <thead><tr><th>N°</th><th>Fecha</th><th>Conductor</th><th>Placa</th>
-      <th>Lugar Pesca</th><th>Solicitado Por</th><th>Sacos</th>
-      <th>KG Desp.</th><th>KG Dev.</th><th>KG Usado</th></tr></thead>
+  const tkd=f.reduce((s,r)=>s+(r.cantKg||0),0);
+  const tkv=f.reduce((s,r)=>s+(r.devKg||0),0);
+  const ts=f.reduce((s,r)=>s+(r.cantSacos||0),0);
+  g("rs-total").textContent=f.length; g("rs-sacos").textContent=ts;
+  g("rs-kgd").textContent=tkd.toFixed(1)+" kg"; g("rs-kgv").textContent=tkv.toFixed(1)+" kg"; g("rs-kgu").textContent=(tkd-tkv).toFixed(1)+" kg";
+  const wrap=g("tabla-reporte");
+  if(!f.length){wrap.innerHTML='<div class="empty"><span class="ei">🔍</span>Sin resultados</div>';return;}
+  wrap.innerHTML=`<div class="tbl-wrap"><table>
+    <thead><tr><th>N°</th><th>Fecha</th><th>Conductor</th><th>Lugar Pesca</th><th>Sol. Por</th><th>Sacos</th><th>KG D.</th><th>KG Dev.</th><th>KG Usado</th></tr></thead>
     <tbody>${f.map(r=>{const u=(r.cantKg||0)-(r.devKg||0);return`<tr>
-      <td><span class="badge badge-blue">${r.numeracion}</span></td>
-      <td>${r.fechaDespacho||"—"}</td><td>${r.conductor||"—"}</td><td>${r.placa||"—"}</td>
-      <td>${r.lugarPesca||"—"}</td><td>${r.solicitadoPor||"—"}</td><td>${r.cantSacos||"—"}</td>
-      <td>${r.cantKg?r.cantKg+" kg":"—"}</td><td>${r.devKg?r.devKg+" kg":"—"}</td>
-      <td><span class="badge badge-pink">${u.toFixed(1)} kg</span></td>
+      <td><span class="badge b-blue">${r.numeracion}</span></td>
+      <td>${r.fechaDespacho||"—"}</td><td>${r.conductor||"—"}</td>
+      <td>${r.lugarPesca||"—"}</td><td>${r.solicitadoPor||"—"}</td>
+      <td>${r.cantSacos||"—"}</td><td>${r.cantKg?r.cantKg+" kg":"—"}</td>
+      <td>${r.devKg?r.devKg+" kg":"—"}</td>
+      <td><span class="badge b-pink">${u.toFixed(1)} kg</span></td>
     </tr>`}).join("")}
     </tbody>
-    <tfoot><tr><td colspan="6" style="color:var(--muted)">TOTALES</td>
-      <td>${ts}</td>
-      <td style="color:var(--orange)">${tkd.toFixed(1)} kg</td>
+    <tfoot><tr><td colspan="5" style="color:var(--muted)">TOTALES</td>
+      <td>${ts}</td><td style="color:var(--orange)">${tkd.toFixed(1)} kg</td>
       <td style="color:var(--green)">${tkv.toFixed(1)} kg</td>
       <td style="color:var(--pink)">${(tkd-tkv).toFixed(1)} kg</td>
     </tr></tfoot></table></div>`;
 };
-
-window.limpiarFiltros = function(){
-  ["r-desde","r-hasta","r-conductor","r-solicitado","r-lugar"].forEach(id=>document.getElementById(id).value="");
+window.limpiarFiltros=function(){
+  ["r-desde","r-hasta","r-cond","r-soli","r-lugar"].forEach(id=>g(id).value="");
   aplicarFiltros();
 };
 
-// ============================================================
-//  GESTIÓN DE USUARIOS
-// ============================================================
-window.crearUsuario = async function() {
-  const nombre = document.getElementById("u-nombre").value.trim();
-  const email  = document.getElementById("u-email").value.trim();
-  const pass   = document.getElementById("u-pass").value.trim();
-  const rol    = document.getElementById("u-rol").value;
-  if(!nombre||!email||!pass){ showAlert("Completa todos los campos del usuario.","error"); return; }
-  if(pass.length < 6){ showAlert("La contraseña debe tener al menos 6 caracteres.","error"); return; }
+// ─── VER DETALLE ───
+window.verDetalle=function(id){
+  const r=allReg.find(x=>x.id===id); if(!r) return;
+  g("modal-title").textContent="Orden de Despacho N° "+r.numeracion;
+  const f=(l,val)=>val?`<div class="det-row"><div class="det-lbl">${l}</div><div class="det-val">${val}</div></div>`:"";
+  g("modal-body").innerHTML=`
+    <div class="det-sec"><div class="det-title">🚛 Transportista</div><div class="det-grid">
+      ${f("Placa",r.placa)}${f("Conductor",r.conductor)}
+      ${f("F. Inicio",r.fechaInicio)}${f("H. Salida",r.horaSalida)}
+      ${f("Punto Partida",r.puntoPartida)}${f("F. Fin",r.fechaFin)}
+      ${f("H. Llegada",r.horaLlegada)}${f("Punto Llegada",r.puntoLlegada)}
+      ${f("Ruta",r.ruta)}${f("Guía MDI",r.guiaMdi)}
+      ${f("Lugar Pesca",r.lugarPesca)}${f("Nro. Guía",r.nroGuia)}
+      ${f("Cód. Recibidor",r.codRecibidor)}
+    </div></div>
+    <div class="det-sec"><div class="det-title">📦 Despacho</div><div class="det-grid">
+      ${f("Fecha",r.fechaDespacho)}${f("Solicitado Por",r.solicitadoPor)}
+      ${f("Despachado Por",r.despachador)}${f("Sacos",r.cantSacos)}
+      ${f("KG",r.cantKg?r.cantKg+" kg":"")}${f("Lote",r.lote)}
+      ${f("Marca",r.marca)}${f("Num. Saco",r.numSaco)}
+    </div></div>
+    <div class="det-sec"><div class="det-title">🔄 Devolución</div><div class="det-grid">
+      ${f("Fecha",r.fechaDev)}${f("Sacos",r.devSacos)}
+      ${f("KG",r.devKg?r.devKg+" kg":"")}${f("Num. Saco",r.devNumSaco)}
+    </div></div>
+    ${r.observacion?`<div class="det-sec"><div class="det-title">📝 Observaciones</div><div style="font-size:13px">${r.observacion}</div></div>`:""}
+    <div style="margin-top:12px"><button class="btn btn-info" style="width:100%" onclick="pdfRegistro('${r.id}')">📄 Generar PDF</button></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">Ingresado por: ${r.ingresadoPor||"—"}</div>`;
+  g("modal").style.display="flex";
+};
+window.closeModal=()=>g("modal").style.display="none";
 
-  const btn = document.getElementById("btn-crear-user");
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Creando...';
-  try {
-    // Crear en Firebase Auth
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    // Guardar perfil en Firestore
-    await setDoc(doc(db, COL_USUARIOS, cred.user.uid), {
-      nombre, email, rol, activo: true,
-      creadoPor: currentNombre,
-      creadoEn: new Date().toISOString()
-    });
-    // Limpiar
-    ["u-nombre","u-email","u-pass"].forEach(id=>document.getElementById(id).value="");
-    document.getElementById("u-rol").value = "operario";
-    showAlert(`✅ Usuario "${nombre}" creado como ${rol}.`, "success");
-    cargarUsuarios();
-  } catch(e) {
-    let msg = e.message;
-    if(e.code==="auth/email-already-in-use") msg = "Ese correo ya está registrado.";
-    if(e.code==="auth/invalid-email") msg = "Correo inválido.";
-    showAlert("Error: " + msg, "error");
-  }
-  btn.disabled = false; btn.textContent = "➕ CREAR USUARIO";
+// ─── PDF (igual a FOR-BOD-05) ───
+window.pdfRegistro=function(id){
+  const r=typeof id==="string"?allReg.find(x=>x.id===id):id;
+  if(!r) return;
+  generarPDF(r);
 };
 
-async function cargarUsuarios() {
-  const wrap = document.getElementById("lista-usuarios");
-  try {
-    const snap = await getDocs(collection(db, COL_USUARIOS));
-    const users = snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(!users.length){ wrap.innerHTML='<div class="empty">No hay usuarios registrados.</div>'; return; }
-    wrap.innerHTML = users.map(u=>`
-      <div class="user-row">
-        <div class="user-avatar ${u.rol==='admin'?'avatar-admin':'avatar-operario'}">
-          ${(u.nombre||"?")[0].toUpperCase()}
-        </div>
-        <div class="user-info">
-          <div class="user-name">${u.nombre||"Sin nombre"}</div>
-          <div class="user-email">${u.email}</div>
-        </div>
-        <span class="badge ${u.rol==='admin'?'badge-yellow':'badge-blue'}">${u.rol}</span>
-        <span class="badge ${u.activo!==false?'badge-green':'badge-red'}">${u.activo!==false?'activo':'inactivo'}</span>
-        <div class="actions">
-          ${u.activo!==false
-            ? `<button class="btn-warning" onclick="toggleUsuario('${u.id}',false)">Desactivar</button>`
-            : `<button class="btn-success" onclick="toggleUsuario('${u.id}',true)">Activar</button>`}
-          ${u.rol==='operario'
-            ? `<button class="btn-warning" onclick="cambiarRol('${u.id}','admin')">→ Admin</button>`
-            : `<button class="btn-secondary" onclick="cambiarRol('${u.id}','operario')" style="font-size:11px">→ Operario</button>`}
-        </div>
-      </div>`).join("");
-  } catch(e) {
-    wrap.innerHTML = `<div class="empty">Error al cargar usuarios: ${e.message}</div>`;
+function generarPDF(r){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  const W=210, M=14;
+
+  // ─ Paleta ─
+  const azulOsc=[13,32,53];
+  const azulMed=[29,111,168];
+  const azulCla=[6,214,247];
+  const gris=[245,247,250];
+  const borde=[180,200,220];
+  const negro=[20,20,20];
+  const blanco=[255,255,255];
+
+  // ─ Encabezado ─
+  doc.setFillColor(...azulOsc);
+  doc.rect(0,0,W,32,"F");
+  doc.setFillColor(...azulMed);
+  doc.rect(0,32,W,4,"F");
+
+  doc.setTextColor(6,214,247);
+  doc.setFontSize(7); doc.setFont("helvetica","bold");
+  doc.text("BODEGA",W-M,10,{align:"right"});
+  doc.text("CÓDIGO: FOR-BOD-05",W-M,15,{align:"right"});
+  doc.text("VERSIÓN: 00",W-M,20,{align:"right"});
+  doc.text("EMISIÓN: 10/02/2026",W-M,25,{align:"right"});
+  doc.text("NUMERACIÓN: "+r.numeracion,W-M,30,{align:"right"});
+
+  doc.setTextColor(...blanco);
+  doc.setFontSize(13); doc.setFont("helvetica","bold");
+  doc.text("🧪  ORDEN DE DESPACHO DE METABISULFITO DE SODIO",M,14);
+  doc.setFontSize(9); doc.setFont("helvetica","normal");
+  doc.text("Bodega Sta. Rosa  ·  Control de Insumos",M,21);
+  doc.setFontSize(8);
+  doc.text("Ingresado por: "+(r.ingresadoPor||"—")+"   |   Fecha registro: "+new Date(r.createdAt||Date.now()).toLocaleString("es-EC"),M,28);
+
+  let y=42;
+
+  // ─ Sección util ─
+  function seccion(titulo,emoji){
+    doc.setFillColor(...azulMed);
+    doc.roundedRect(M,y,W-M*2,7,2,2,"F");
+    doc.setTextColor(...blanco); doc.setFontSize(8); doc.setFont("helvetica","bold");
+    doc.text(emoji+"  "+titulo,M+3,y+4.8);
+    y+=10;
   }
+
+  function fila2(l1,v1,l2,v2){
+    const half=(W-M*2)/2-2;
+    // Fondo alternado
+    doc.setFillColor(...gris);
+    doc.roundedRect(M,y,W-M*2,8,1,1,"F");
+    doc.setDrawColor(...borde); doc.setLineWidth(.3);
+    doc.roundedRect(M,y,W-M*2,8,1,1,"S");
+    doc.setTextColor(100,120,140); doc.setFontSize(6.5); doc.setFont("helvetica","bold");
+    doc.text(l1.toUpperCase(),M+2,y+3);
+    doc.setTextColor(...negro); doc.setFontSize(8); doc.setFont("helvetica","normal");
+    doc.text(String(v1||"—"),M+2,y+7);
+    if(l2!==undefined){
+      doc.setTextColor(100,120,140); doc.setFontSize(6.5); doc.setFont("helvetica","bold");
+      doc.text(l2.toUpperCase(),M+half+6,y+3);
+      doc.setTextColor(...negro); doc.setFontSize(8); doc.setFont("helvetica","normal");
+      doc.text(String(v2||"—"),M+half+6,y+7);
+    }
+    y+=10;
+  }
+
+  function fila1(l,val){
+    doc.setFillColor(...gris);
+    doc.roundedRect(M,y,W-M*2,8,1,1,"F");
+    doc.setDrawColor(...borde); doc.setLineWidth(.3);
+    doc.roundedRect(M,y,W-M*2,8,1,1,"S");
+    doc.setTextColor(100,120,140); doc.setFontSize(6.5); doc.setFont("helvetica","bold");
+    doc.text(l.toUpperCase(),M+2,y+3);
+    doc.setTextColor(...negro); doc.setFontSize(8); doc.setFont("helvetica","normal");
+    doc.text(String(val||"—"),M+2,y+7);
+    y+=10;
+  }
+
+  // ─ Transportista ─
+  seccion("INFORMACIÓN DEL TRANSPORTISTA","🚛");
+  fila2("Placa del Vehículo",r.placa,"Nombre del Conductor",r.conductor);
+  fila2("Fecha Inicio Transporte",r.fechaInicio,"Hora de Salida",r.horaSalida);
+  fila2("Punto de Partida",r.puntoPartida,"Fecha Fin Transporte",r.fechaFin);
+  fila2("Hora de Llegada",r.horaLlegada,"Punto de Llegada",r.puntoLlegada);
+  fila2("Ruta del Transporte",r.ruta,"Guía MDI",r.guiaMdi);
+  fila2("Lugar de Pesca / Productor",r.lugarPesca,"Nro. Guía Remisión/Pesca",r.nroGuia);
+  fila2("Código Recibidor",r.codRecibidor,"","");
+  y+=2;
+
+  // ─ Despacho ─
+  seccion("DESPACHO DE METABISULFITO DE SODIO PARA LA PESCA","📦");
+  fila2("Fecha del Despacho",r.fechaDespacho,"Solicitado Por",r.solicitadoPor);
+  fila2("Despachado Por",r.despachador,"","");
+  fila2("Cantidad de Sacos",r.cantSacos||0,"Cantidad en KG",(r.cantKg||0)+" kg");
+  fila2("Lote del Saco",r.lote,"Marca del Saco",r.marca);
+  fila1("Numeración del Saco",r.numSaco);
+  y+=2;
+
+  // ─ Devolución ─
+  seccion("DEVOLUCIÓN DE METABISULFITO DE SODIO DESDE LA PESCA","🔄");
+  fila2("Fecha de la Devolución",r.fechaDev,"Devolución Cantidad en Sacos",r.devSacos||0);
+  fila2("Devolución Cantidad en KG",(r.devKg||0)+" kg","Devolución Numeración del Saco",r.devNumSaco);
+  y+=2;
+
+  // ─ KG Utilizados ─
+  const kgUsado=(r.cantKg||0)-(r.devKg||0);
+  doc.setFillColor(...azulOsc);
+  doc.roundedRect(M,y,W-M*2,12,2,2,"F");
+  doc.setTextColor(...azulCla); doc.setFontSize(8); doc.setFont("helvetica","bold");
+  doc.text("KG EFECTIVAMENTE UTILIZADOS:",M+4,y+5);
+  doc.setTextColor(...blanco); doc.setFontSize(11);
+  doc.text(kgUsado.toFixed(2)+" KG",M+4,y+11);
+  y+=16;
+
+  // ─ Observaciones ─
+  if(r.observacion){
+    seccion("OBSERVACIONES","📝");
+    doc.setFillColor(...gris);
+    doc.roundedRect(M,y,W-M*2,14,1,1,"F");
+    doc.setTextColor(...negro); doc.setFontSize(8); doc.setFont("helvetica","normal");
+    const lines=doc.splitTextToSize(r.observacion,W-M*2-4);
+    doc.text(lines,M+2,y+5);
+    y+=18;
+  }
+
+  // ─ Firmas ─
+  y+=4;
+  doc.setDrawColor(...borde); doc.setLineWidth(.4);
+  const fw=55, gap=(W-M*2-fw*3)/2;
+  [["ENCARGADO DE DESPACHO",r.despachador||""],["TRANSPORTISTA",r.conductor||""],["RECIBIDO POR",r.solicitadoPor||""]].forEach(([t,n],i)=>{
+    const x=M+i*(fw+gap);
+    doc.line(x,y+10,x+fw,y+10);
+    doc.setTextColor(100,120,140); doc.setFontSize(7); doc.setFont("helvetica","bold");
+    doc.text(t,x+fw/2,y+14,{align:"center"});
+    doc.setTextColor(...negro); doc.setFontSize(8); doc.setFont("helvetica","normal");
+    doc.text(n,x+fw/2,y+19,{align:"center"});
+  });
+
+  // ─ Footer ─
+  doc.setFillColor(...azulOsc);
+  doc.rect(0,285,W,12,"F");
+  doc.setTextColor(...azulCla); doc.setFontSize(7); doc.setFont("helvetica","normal");
+  doc.text("FOR-BOD-05  ·  Generado el "+new Date().toLocaleString("es-EC")+"  ·  Control Metabisulfito Sta. Rosa",W/2,292,{align:"center"});
+
+  doc.save("Despacho_"+r.numeracion+"_"+r.fechaDespacho+".pdf");
 }
 
-window.toggleUsuario = async function(uid, estado) {
-  try {
-    await updateDoc(doc(db, COL_USUARIOS, uid), {activo: estado});
-    showAlert(estado ? "Usuario activado." : "Usuario desactivado.", "info");
+// ─── USUARIOS ───
+window.crearUsuario=async function(){
+  const nombre=v("u-nombre"),email=v("u-email"),pass=v("u-pass"),rol=g("u-rol").value;
+  if(!nombre||!email||!pass){showAlert("Completa todos los campos.","error");return;}
+  if(pass.length<6){showAlert("Contraseña mínimo 6 caracteres.","error");return;}
+  const btn=g("btn-crear"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
+  try{
+    const cred=await createUserWithEmailAndPassword(auth,email,pass);
+    await setDoc(doc(db,CUSR,cred.user.uid),{nombre,email,rol,activo:true,creadoPor:curNombre,creadoEn:new Date().toISOString()});
+    ["u-nombre","u-email","u-pass"].forEach(id=>g(id).value=""); g("u-rol").value="operario";
+    showAlert("✅ Usuario "+nombre+" creado como "+rol+".","success");
     cargarUsuarios();
-  } catch(e){ showAlert("Error: "+e.message,"error"); }
+  }catch(e){
+    let m=e.message;
+    if(e.code==="auth/email-already-in-use") m="Ese correo ya está registrado.";
+    showAlert("Error: "+m,"error");
+  }
+  btn.disabled=false; btn.textContent="➕ CREAR USUARIO";
 };
 
-window.cambiarRol = async function(uid, nuevoRol) {
-  if(!confirm(`¿Cambiar el rol a "${nuevoRol}"?`)) return;
-  try {
-    await updateDoc(doc(db, COL_USUARIOS, uid), {rol: nuevoRol});
-    showAlert("Rol actualizado.", "info");
-    cargarUsuarios();
-  } catch(e){ showAlert("Error: "+e.message,"error"); }
-};
+async function cargarUsuarios(){
+  const wrap=g("lista-usuarios");
+  try{
+    const snap=await getDocs(collection(db,CUSR));
+    const users=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!users.length){wrap.innerHTML='<div class="empty">Sin usuarios</div>';return;}
+    wrap.innerHTML=users.map(u=>`
+      <div class="user-row">
+        <div class="u-avatar ${u.rol==="admin"?"ua-admin":"ua-op"}">${(u.nombre||"?")[0].toUpperCase()}</div>
+        <div class="u-info">
+          <div class="u-name">${u.nombre||"Sin nombre"}</div>
+          <div class="u-email">${u.email}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span class="badge ${u.rol==="admin"?"b-yellow":"b-blue"}">${u.rol}</span>
+          <span class="badge ${u.activo!==false?"b-green":"b-red"}">${u.activo!==false?"activo":"inactivo"}</span>
+        </div>
+        <div class="u-actions">
+          ${u.activo!==false
+            ?`<button class="btn btn-sm btn-warn" onclick="toggleUser('${u.id}',false)">Desact.</button>`
+            :`<button class="btn btn-sm btn-success" onclick="toggleUser('${u.id}',true)">Activar</button>`}
+          ${u.rol==="operario"
+            ?`<button class="btn btn-sm btn-ghost" onclick="changeRole('${u.id}','admin')">→ Admin</button>`
+            :`<button class="btn btn-sm btn-ghost" onclick="changeRole('${u.id}','operario')">→ Op.</button>`}
+        </div>
+      </div>`).join("");
+  }catch(e){wrap.innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
+}
+window.toggleUser=async(uid,s)=>{await updateDoc(doc(db,CUSR,uid),{activo:s});showAlert(s?"Usuario activado.":"Usuario desactivado.","info");cargarUsuarios();};
+window.changeRole=async(uid,r)=>{if(!confirm("¿Cambiar rol a "+r+"?"))return;await updateDoc(doc(db,CUSR,uid),{rol:r});showAlert("Rol actualizado.","info");cargarUsuarios();};
 
-// ============================================================
-//  VER DETALLE
-// ============================================================
-window.verDetalle = function(id) {
-  const r = todosRegistros.find(x=>x.id===id);
-  if(!r) return;
-  document.getElementById("modal-title").textContent = "Orden N° " + r.numeracion;
-  const f = (l,v)=>v?`<div class="detalle-row"><span class="detalle-lbl">${l}:</span><span class="detalle-val">${v}</span></div>`:"";
-  document.getElementById("modal-body").innerHTML = `
-    <div class="detalle-section">
-      <div class="detalle-title">🚛 Transportista</div>
-      <div class="detalle-grid">
-        ${f("Placa",r.placa)}${f("Conductor",r.conductor)}
-        ${f("Fecha Inicio",r.fechaInicio)}${f("Hora Salida",r.horaSalida)}
-        ${f("Punto Partida",r.puntoPartida)}${f("Fecha Fin",r.fechaFin)}
-        ${f("Hora Llegada",r.horaLlegada)}${f("Punto Llegada",r.puntoLlegada)}
-        ${f("Ruta",r.ruta)}${f("Guía MDI",r.guiaMdi)}
-        ${f("Lugar Pesca",r.lugarPesca)}${f("Nro. Guía",r.nroGuia)}
-        ${f("Cód. Recibidor",r.codRecibidor)}
-      </div>
-    </div>
-    <div class="detalle-section">
-      <div class="detalle-title">📦 Despacho</div>
-      <div class="detalle-grid">
-        ${f("Fecha",r.fechaDespacho)}${f("Solicitado Por",r.solicitadoPor)}
-        ${f("Despachado Por",r.despachador)}${f("Sacos",r.cantSacos)}
-        ${f("KG",r.cantKg?r.cantKg+" kg":"")}${f("Lote",r.lote)}
-        ${f("Marca",r.marca)}${f("Num. Saco",r.numSaco)}
-      </div>
-    </div>
-    <div class="detalle-section">
-      <div class="detalle-title">🔄 Devolución</div>
-      <div class="detalle-grid">
-        ${f("Fecha",r.fechaDev)}${f("Sacos Dev.",r.devSacos)}
-        ${f("KG Dev.",r.devKg?r.devKg+" kg":"")}${f("Num. Saco Dev.",r.devNumSaco)}
-      </div>
-    </div>
-    ${r.observacion?`<div class="detalle-section"><div class="detalle-title">📝 Observaciones</div><div style="font-size:13px">${r.observacion}</div></div>`:""}
-    <div style="margin-top:10px;font-size:11px;color:var(--muted)">Ingresado por: ${r.ingresadoPor||"—"} · ${r.createdAt?new Date(r.createdAt).toLocaleString("es-EC"):""}</div>`;
-  document.getElementById("modal").style.display = "flex";
-};
-
-// ============================================================
-//  UTILIDADES
-// ============================================================
-window.switchTab = function(i) {
-  [0,1,2,3].forEach(j=>{
-    const t = document.getElementById("tab-"+j);
-    if(t) t.style.display = j===i?"block":"none";
+// ─── SWITCH TAB ───
+window.switchTab=function(i){
+  [0,1,2,3,4].forEach(j=>{
+    const t=g("tab-"+j); if(t) t.style.display=j===i?"block":"none";
+    const n=g("nav-"+j); if(n) n.classList.toggle("active",j===i);
   });
-  document.querySelectorAll(".tab-btn").forEach((b,j)=>b.classList.toggle("active",j===i));
+  if(i===1&&curRole==="admin") renderDashboard();
 };
 
-function v(id){ return document.getElementById(id)?.value.trim()||""; }
-
-function limpiarFormulario(){
+// ─── UTILS ───
+function v(id){return g(id)?.value.trim()||"";}
+function g(id){return document.getElementById(id);}
+function show(id,d="block"){g(id).style.display=d;}
+function hide(id){g(id).style.display="none";}
+function limpiarForm(){
   ["f-placa","f-conductor","f-fechaInicio","f-horaSalida","f-puntoPartida","f-fechaFin",
    "f-horaLlegada","f-puntoLlegada","f-ruta","f-guiaMdi","f-lugarPesca","f-nroGuia",
    "f-codRecibidor","f-fechaDespacho","f-solicitadoPor","f-despachador","f-cantSacos",
    "f-cantKg","f-lote","f-marca","f-numSaco","f-fechaDev","f-devSacos","f-devKg",
-   "f-devNumSaco","f-obs"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+   "f-devNumSaco","f-obs"].forEach(id=>{const e=g(id);if(e)e.value="";});
 }
-
-function showAlert(msg, type="success"){
-  const box = document.getElementById("alert-box");
-  box.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
-  setTimeout(()=>box.innerHTML="", 5000);
+function showAlert(msg,type="success"){
+  const b=g("alert-box");
+  b.innerHTML=`<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(()=>b.innerHTML="",5000);
 }
-
-function showLoginError(msg){
-  const el = document.getElementById("login-error");
-  el.textContent = msg; el.style.display = "block";
-}
-
-function show(id, display="block"){ document.getElementById(id).style.display = display; }
-function hide(id){ document.getElementById(id).style.display = "none"; }
+function showLoginErr(msg){const e=g("lerror");e.textContent=msg;e.style.display="block";}
 
 </script>
 </body>
