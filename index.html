@@ -761,12 +761,31 @@ window.eliminarRegistro=async function(id){
 };
 
 // ─── DASHBOARD ───
+
+// Combina Firebase + Excel histórico en un array unificado para el dashboard
+function allRegConHistorico(){
+  // Convertir EXCEL_HISTORICO al mismo formato que allReg para poder mezclarlos
+  const excelComoReg = EXCEL_HISTORICO.map(e => ({
+    fechaDespacho: e.fecha,
+    cantKg:  e.tipo === "EGRESO"  ? e.kg : 0,
+    devKg:   e.tipo === "INGRESO" ? e.kg : 0,
+    cantSacos: 0,
+    lugarPesca: e.destino || e.sitio,
+    conductor: e.conductor || "",
+    _fromExcel: true,
+  }));
+  return [...allReg, ...excelComoReg];
+}
+
 function renderDashboard(){
-  const tkd=allReg.reduce((s,r)=>s+(r.cantKg||0),0);
-  const tkv=allReg.reduce((s,r)=>s+(r.devKg||0),0);
-  const ts=allReg.reduce((s,r)=>s+(r.cantSacos||0),0);
-  g("s-total").textContent=allReg.length;
-  g("s-sacos").textContent=ts;
+  const todos = allRegConHistorico();
+  const tkd=todos.reduce((s,r)=>s+(r.cantKg||0),0);
+  const tkv=todos.reduce((s,r)=>s+(r.devKg||0),0);
+  const ts=todos.reduce((s,r)=>s+(r.cantSacos||0),0);
+  // Despachos: Firebase tiene registros completos, Excel tiene movimientos individuales
+  const totalDespachos = allReg.length + EXCEL_HISTORICO.filter(e=>e.tipo==="EGRESO").length;
+  g("s-total").textContent=totalDespachos;
+  g("s-sacos").textContent=ts||"—";
   g("s-kgd").textContent=tkd.toFixed(1)+" kg";
   g("s-kgv").textContent=tkv.toFixed(1)+" kg";
   g("s-kgu").textContent=(tkd-tkv).toFixed(1)+" kg";
@@ -774,8 +793,9 @@ function renderDashboard(){
 }
 
 function buildChartMensual(){
+  const todos = allRegConHistorico();
   const map={};
-  allReg.forEach(r=>{
+  todos.forEach(r=>{
     if(!r.fechaDespacho) return;
     const k=r.fechaDespacho.slice(0,7);
     if(!map[k]) map[k]={d:0,v:0};
@@ -798,6 +818,7 @@ function buildChartMensual(){
 }
 
 function buildChartSacos(){
+  // Sacos solo de Firebase (el Excel no tiene datos de sacos individuales)
   const map={};
   allReg.forEach(r=>{ if(!r.fechaDespacho) return; map[r.fechaDespacho]=(map[r.fechaDespacho]||0)+(r.cantSacos||0); });
   const labels=Object.keys(map).sort().slice(-10);
@@ -806,28 +827,35 @@ function buildChartSacos(){
   if(chartSacos) chartSacos.destroy();
   chartSacos=new Chart(ctx,{
     type:"line",
-    data:{labels,datasets:[{label:"Sacos",data,fill:true,backgroundColor:"#a78bfa22",borderColor:"#a78bfa",borderWidth:2,tension:.4,pointBackgroundColor:"#a78bfa",pointRadius:4}]},
+    data:{labels,datasets:[{label:"Sacos (Firebase)",data,fill:true,backgroundColor:"#a78bfa22",borderColor:"#a78bfa",borderWidth:2,tension:.4,pointBackgroundColor:"#a78bfa",pointRadius:4}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#7a9bb5",font:{size:10}}}},scales:{x:{ticks:{color:"#7a9bb5",font:{size:9},maxRotation:40},grid:{color:"#1f3347"}},y:{ticks:{color:"#7a9bb5",font:{size:10}},grid:{color:"#1f3347"}}}}
   });
 }
 
 function buildChartAcum(){
-  const sorted=[...allReg].filter(r=>r.fechaDespacho).sort((a,b)=>a.fechaDespacho.localeCompare(b.fechaDespacho));
+  // Acumulado de KG combinando Excel histórico + Firebase, ordenado por fecha
+  const todos = allRegConHistorico();
+  const sorted=todos.filter(r=>r.fechaDespacho).sort((a,b)=>a.fechaDespacho.localeCompare(b.fechaDespacho));
   let acum=0;
   const labels=[], data=[];
-  sorted.forEach(r=>{ acum+=(r.cantKg||0)-(r.devKg||0); labels.push(r.fechaDespacho); data.push(+acum.toFixed(1)); });
+  sorted.forEach(r=>{
+    acum+=(r.cantKg||0)-(r.devKg||0);
+    labels.push(r.fechaDespacho);
+    data.push(+acum.toFixed(1));
+  });
   const ctx=g("chart-acum").getContext("2d");
   if(chartAcum) chartAcum.destroy();
   chartAcum=new Chart(ctx,{
     type:"line",
-    data:{labels:labels.slice(-20),datasets:[{label:"KG Utilizados Acum.",data:data.slice(-20),fill:true,backgroundColor:"#ff8c4222",borderColor:"#ff8c42",borderWidth:2,tension:.4,pointRadius:3,pointBackgroundColor:"#ff8c42"}]},
+    data:{labels:labels.slice(-30),datasets:[{label:"KG Neto Acumulado",data:data.slice(-30),fill:true,backgroundColor:"#ff8c4222",borderColor:"#ff8c42",borderWidth:2,tension:.4,pointRadius:2,pointBackgroundColor:"#ff8c42"}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#7a9bb5",font:{size:10}}}},scales:{x:{ticks:{color:"#7a9bb5",font:{size:9},maxRotation:40},grid:{color:"#1f3347"}},y:{ticks:{color:"#7a9bb5",font:{size:10}},grid:{color:"#1f3347"}}}}
   });
 }
 
 function buildDestinos(){
+  const todos = allRegConHistorico();
   const map={};
-  allReg.forEach(r=>{ if(r.lugarPesca) map[r.lugarPesca]=(map[r.lugarPesca]||0)+1; });
+  todos.forEach(r=>{ if(r.lugarPesca) map[r.lugarPesca]=(map[r.lugarPesca]||0)+1; });
   const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const max=sorted[0]?.[1]||1;
   const wrap=g("chart-destinos");
