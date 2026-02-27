@@ -283,8 +283,27 @@
       <div class="card">
         <div class="card-title">🚛 Transportista</div>
         <div class="fgrid">
-          <div class="field"><label>Placa del Vehículo</label><input id="f-placa" type="text" placeholder="Ej: ABC-1234" autocomplete="off"/></div>
-          <div class="field"><label>Conductor ★</label><input id="f-conductor" type="text" placeholder="Nombre completo" autocomplete="off"/></div>
+          <div class="field" style="grid-column:1/-1">
+            <label>Conductor &#9733;</label>
+            <select id="f-conductor" onchange="autoPlaca(this.value)" style="background:var(--bg);border:1.5px solid var(--border2);border-radius:10px;padding:11px 13px;color:var(--text);font-size:14px;font-family:inherit;outline:none;width:100%">
+              <option value="">-- Seleccionar conductor --</option>
+              <option value="ARGUELLO SOLORZANO PEDRO ANIBAL" data-placa="PCD9219">ARGUELLO SOLORZANO PEDRO ANIBAL &mdash; PCD9219</option>
+              <option value="ALBAN VALAREZO MANUEL JOSELITO" data-placa="OBA3449">ALBAN VALAREZO MANUEL JOSELITO &mdash; OBA3449</option>
+              <option value="RODRIGUEZ PARDO VICENTE ROBERTO" data-placa="GQZ0299">RODRIGUEZ PARDO VICENTE ROBERTO &mdash; GQZ0299</option>
+              <option value="SANMARTIN QUEZADA JOSE LUIS" data-placa="TCM0261">SANMARTIN QUEZADA JOSE LUIS &mdash; TCM0261</option>
+              <option value="RODRIGUEZ AYALA FREDDY HERNEY" data-placa="OAA1854">RODRIGUEZ AYALA FREDDY HERNEY &mdash; OAA1854</option>
+              <option value="JIMENEZ CHAMBA SANTOS GABRIEL" data-placa="PIA0438">JIMENEZ CHAMBA SANTOS GABRIEL &mdash; PIA0438</option>
+              <option value="SOTO CHIMBO JOSE JOEL" data-placa="XBW0304">SOTO CHIMBO JOSE JOEL &mdash; XBW0304</option>
+              <option value="ULLOA CABRERA KEVIN JONATHAN" data-placa="LCH0740">ULLOA CABRERA KEVIN JONATHAN &mdash; LCH0740</option>
+              <option value="GANCHOZO VELEZ PEDRO LEONARDO" data-placa="OAA4374">GANCHOZO VELEZ PEDRO LEONARDO &mdash; OAA4374</option>
+              <option value="RODRIGUEZ TORRES FREDY HERNEY" data-placa="GSG7573">RODRIGUEZ TORRES FREDY HERNEY &mdash; GSG7573</option>
+              <option value="MERA VALENCIA RAMON BENIGNO" data-placa="AFZ0931">MERA VALENCIA RAMON BENIGNO &mdash; AFZ0931</option>
+              <option value="VALAREZO CUEVA REMIGIO DE JESUS" data-placa="GBO8135">VALAREZO CUEVA REMIGIO DE JESUS &mdash; GBO8135</option>
+              <option value="OTRO" data-placa="">OTRO (ingresar manualmente)</option>
+            </select>
+          </div>
+          <div class="field"><label>Placa del Vehículo</label><input id="f-placa" type="text" placeholder="Se llena automaticamente" autocomplete="off" readonly style="background:#0a1520;color:var(--cyan);font-weight:700"/></div>
+          <div class="field" id="f-conductor-manual-wrap" style="display:none"><label>Nombre conductor (otro)</label><input id="f-conductor-manual" type="text" placeholder="Ingresa el nombre"/></div>
         </div>
         <div style="height:12px"></div>
         <div class="fgrid">
@@ -439,6 +458,51 @@
       </div>
     </div>
 
+
+    <!-- ====== TAB 5: KARDEX (admin) ====== -->
+    <div id="tab-5" style="display:none">
+      <div class="top-bar">
+        <div class="page-title">Kardex de Movimientos</div>
+        <button class="btn btn-sm btn-ghost" onclick="cargarKardex()">&#8635; Actualizar</button>
+      </div>
+
+      <!-- Selector de sitio -->
+      <div class="card">
+        <div class="card-title">Seleccionar Bodega / Sitio</div>
+        <div class="fgrid">
+          <div class="field" style="grid-column:1/-1">
+            <label>Bodega</label>
+            <select id="k-sitio" onchange="cargarKardex()" style="background:var(--bg);border:1.5px solid var(--border2);border-radius:10px;padding:11px 13px;color:var(--text);font-size:14px;font-family:inherit;outline:none;width:100%">
+              <option value="todos">Todos los sitios (consolidado)</option>
+              <option value="LOGIST-Dic 2025">Icemart-Logistica Dic 2025</option>
+              <option value="LOGIST-Sta Rosa 2026">Mare Sta. Rosa 2026</option>
+              <option value="TELVER-China Resi MARE-STA ROSA">Mare Sta. Rosa 1 - Dic 2025</option>
+              <option value="Telver china Resiq MARE CAMBIO">Mare El Cambio</option>
+              <option value="CHINA MARE CAMBIO">Icemart-Mare Cambio</option>
+              <option value="CHINA-MARE-STA ROSA">Icemart-Mare Sta. Rosa</option>
+              <option value="MOLO-LOGIST">Icemart-Logistica Molo</option>
+              <option value="CHINA-LOGIST">Icemart-Logistica China</option>
+            </select>
+          </div>
+          <div class="field"><label>Fecha desde</label><input id="k-desde" type="date" oninput="cargarKardex()"/></div>
+          <div class="field"><label>Fecha hasta</label><input id="k-hasta" type="date" oninput="cargarKardex()"/></div>
+        </div>
+      </div>
+
+      <!-- Stats del kardex -->
+      <div class="stats-row" id="k-stats" style="display:none">
+        <div class="stat-card sc3"><div class="stat-num" id="k-total-ing" style="color:var(--green)">0 kg</div><div class="stat-label">Total Ingresos</div></div>
+        <div class="stat-card sc2"><div class="stat-num" id="k-total-egr" style="color:var(--orange)">0 kg</div><div class="stat-label">Total Egresos</div></div>
+        <div class="stat-card sc5"><div class="stat-num" id="k-saldo-act" style="color:var(--purple)">0 kg</div><div class="stat-label">Saldo Actual</div></div>
+        <div class="stat-card sc1"><div class="stat-num" id="k-movs">0</div><div class="stat-label">Movimientos</div></div>
+      </div>
+
+      <!-- Tabla kardex -->
+      <div class="card">
+        <div id="tabla-kardex"><div class="empty"><span class="ei">&#128196;</span>Selecciona una bodega para ver el kardex</div></div>
+      </div>
+    </div>
+
   </div><!-- /main -->
 
   <!-- BOTTOM NAV -->
@@ -543,14 +607,13 @@ async function initApp(){
   const nav=g("bottom-nav");
   if(curRole==="admin"){
     nav.innerHTML=`
-      <button class="nav-btn active" id="nav-0" onclick="switchTab(0)"><span class="ni">📋</span>Ingresar</button>
-      <button class="nav-btn" id="nav-1" onclick="switchTab(1)"><span class="ni">📊</span>Dashboard</button>
-      <button class="nav-btn" id="nav-2" onclick="switchTab(2)"><span class="ni">📁</span>Registros</button>
-      <button class="nav-btn" id="nav-3" onclick="switchTab(3)"><span class="ni">📈</span>Reportes</button>
-      <button class="nav-btn" id="nav-4" onclick="switchTab(4)"><span class="ni">👥</span>Usuarios</button>`;
-  } else {
-    nav.innerHTML=`<button class="nav-btn active" id="nav-0" onclick="switchTab(0)"><span class="ni">📋</span>Ingresar</button>`;
-  }
+      <button class="nav-btn active" id="nav-0" onclick="switchTab(0)"><span class="ni" style="font-size:16px">&#9998;</span>Ingresar</button>
+      <button class="nav-btn" id="nav-1" onclick="switchTab(1)"><span class="ni" style="font-size:16px">&#9650;</span>Panel</button>
+      <button class="nav-btn" id="nav-2" onclick="switchTab(2)"><span class="ni" style="font-size:16px">&#9776;</span>Registros</button>
+      <button class="nav-btn" id="nav-3" onclick="switchTab(3)"><span class="ni" style="font-size:16px">&#9654;</span>Reportes</button>
+      <button class="nav-btn" id="nav-5" onclick="switchTab(5)"><span class="ni" style="font-size:16px">&#9783;</span>Kardex</button>
+      <button class="nav-btn" id="nav-4" onclick="switchTab(4)"><span class="ni" style="font-size:16px">&#9786;</span>Usuarios</button>`;  } else {
+    nav.innerHTML=`<button class="nav-btn active" id="nav-0" onclick="switchTab(0)"><span class="ni" style="font-size:16px">&#9998;</span>Ingresar</button>`;  }
   switchTab(0);
   await cargarTodo();
 }
@@ -574,7 +637,9 @@ window.cargarTodo=async function(){
 
 // ─── GUARDAR ───
 window.guardarRegistro=async function(){
-  const conductor=v("f-conductor"), fechaDespacho=v("f-fechaDespacho");
+  const conductorRaw=v("f-conductor");
+    const conductor = conductorRaw==="OTRO" ? v("f-conductor-manual") : conductorRaw;
+    const fechaDespacho=v("f-fechaDespacho");
   if(!conductor||!fechaDespacho){showAlert("Faltan campos obligatorios: Conductor ★ y Fecha del Despacho ★","error");return;}
   const btn=g("btn-guardar"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Guardando en Firebase...';
   try{
@@ -797,167 +862,262 @@ window.pdfRegistro=function(id){
   generarPDF(r);
 };
 
+function limpiar(str){
+  if(!str && str!==0) return "-";
+  return String(str)
+    .replace(/[áàä]/g,"a").replace(/[ÁÀÄ]/g,"A")
+    .replace(/[éèë]/g,"e").replace(/[ÉÈË]/g,"E")
+    .replace(/[íìï]/g,"i").replace(/[ÍÌÏ]/g,"I")
+    .replace(/[óòö]/g,"o").replace(/[ÓÒÖ]/g,"O")
+    .replace(/[úùü]/g,"u").replace(/[ÚÙÜ]/g,"U")
+    .replace(/ñ/g,"n").replace(/Ñ/g,"N")
+    .replace(/[^\x20-\x7E]/g,"");
+}
+
 function generarPDF(r){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-  const W=210, M=14;
+  const W=210, M=15, CW=W-M*2;
 
-  // ─ Paleta ─
-  const azulOsc=[13,32,53];
-  const azulMed=[29,111,168];
-  const azulCla=[6,214,247];
-  const gris=[245,247,250];
-  const borde=[180,200,220];
-  const negro=[20,20,20];
-  const blanco=[255,255,255];
+  // Colores — solo RGB, sin caracteres especiales
+  const AZUL_OSC  = [13,  32,  53 ];
+  const AZUL_MED  = [29,  111, 168];
+  const AZUL_ACA  = [6,   174, 212];
+  const GRIS_FILA = [246, 248, 251];
+  const GRIS_LBL  = [120, 140, 160];
+  const NEGRO     = [30,  30,  30 ];
+  const BLANCO    = [255, 255, 255];
+  const BORDE_C   = [200, 215, 228];
 
-  // ─ Encabezado ─
-  doc.setFillColor(...azulOsc);
-  doc.rect(0,0,W,36,"F");
+  let y = 0;
 
-  // Barra de acento azul claro
-  doc.setFillColor(...azulCla);
-  doc.rect(0,36,W,1.5,"F");
+  // ===================== ENCABEZADO =====================
+  // Fondo azul oscuro
+  doc.setFillColor(...AZUL_OSC);
+  doc.rect(0, 0, W, 38, "F");
 
-  // Caja icono laboratorio (cuadrado decorativo)
-  doc.setFillColor(...azulMed);
-  doc.roundedRect(M,5,20,20,3,3,"F");
-  doc.setTextColor(...azulCla);
-  doc.setFontSize(7); doc.setFont("helvetica","bold");
-  doc.text("LAB",M+10,12,{align:"center"});
-  doc.setFontSize(6);
-  doc.text("BODEGA",M+10,16,{align:"center"});
+  // Franja lateral izquierda decorativa
+  doc.setFillColor(...AZUL_MED);
+  doc.rect(0, 0, 6, 38, "F");
 
-  // Titulo principal
-  doc.setTextColor(...blanco);
-  doc.setFontSize(12); doc.setFont("helvetica","bold");
-  doc.text("ORDEN DE DESPACHO DE METABISULFITO DE SODIO",M+26,13);
-  doc.setFontSize(8); doc.setFont("helvetica","normal");
-  doc.text("Bodega Sta. Rosa  -  Control de Insumos",M+26,20);
+  // Linea inferior del header
+  doc.setFillColor(...AZUL_ACA);
+  doc.rect(0, 38, W, 1.2, "F");
+
+  // Titulo
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...BLANCO);
+  doc.text("ORDEN DE DESPACHO DE METABISULFITO DE SODIO", 12, 13);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(180, 210, 230);
+  doc.text("Bodega Sta. Rosa  |  Control de Insumos", 12, 20);
+
   doc.setFontSize(7);
-  doc.text("Ingresado por: "+(r.ingresadoPor||"—")+"   |   Fecha: "+new Date(r.createdAt||Date.now()).toLocaleString("es-EC"),M+26,27);
+  doc.setTextColor(150, 185, 210);
+  const fechaReg = new Date(r.createdAt||Date.now());
+  const fechaStr = fechaReg.getDate()+"/"+(fechaReg.getMonth()+1)+"/"+fechaReg.getFullYear()+" "+fechaReg.getHours()+":"+String(fechaReg.getMinutes()).padStart(2,"0");
+  doc.text("Ingresado por: "+limpiar(r.ingresadoPor)+"   |   Fecha registro: "+fechaStr, 12, 27);
 
-  // Info derecha
-  doc.setTextColor(...azulCla);
-  doc.setFontSize(7); doc.setFont("helvetica","bold");
-  doc.text("BODEGA",W-M,8,{align:"right"});
-  doc.text("CODIGO: FOR-BOD-05",W-M,13,{align:"right"});
-  doc.text("VERSION: 00",W-M,18,{align:"right"});
-  doc.text("EMISION: 10/02/2026",W-M,23,{align:"right"});
-  doc.setTextColor(...blanco);
-  doc.setFontSize(9); doc.setFont("helvetica","bold");
-  doc.text("N. "+r.numeracion,W-M,31,{align:"right"});
+  // Bloque derecho — codigo y numeracion
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...AZUL_ACA);
+  doc.text("BODEGA",          W-M, 8,  {align:"right"});
+  doc.text("CODIGO: FOR-BOD-05", W-M, 14, {align:"right"});
+  doc.text("VERSION: 00",     W-M, 19, {align:"right"});
+  doc.text("EMISION: 10/02/2026", W-M, 24, {align:"right"});
 
-  let y=44;
+  doc.setFontSize(10);
+  doc.setTextColor(...BLANCO);
+  doc.text("No. "+limpiar(r.numeracion), W-M, 33, {align:"right"});
 
-  // ─ Sección util ─
+  y = 44;
+
+  // ===================== FUNCIONES INTERNAS =====================
   function seccion(titulo){
-    doc.setFillColor(...azulMed);
-    doc.roundedRect(M,y,W-M*2,7,2,2,"F");
-    doc.setTextColor(...blanco); doc.setFontSize(8); doc.setFont("helvetica","bold");
-    doc.text(">>  "+titulo,M+3,y+4.8);
-    y+=10;
+    // Fondo de la cabecera de seccion
+    doc.setFillColor(...AZUL_MED);
+    doc.rect(M, y, CW, 6.5, "F");
+    // Borde izquierdo acento
+    doc.setFillColor(...AZUL_ACA);
+    doc.rect(M, y, 3, 6.5, "F");
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...BLANCO);
+    doc.text(titulo, M+6, y+4.5);
+    y += 8;
   }
 
-  function fila2(l1,v1,l2,v2){
-    const half=(W-M*2)/2-2;
-    // Fondo alternado
-    doc.setFillColor(...gris);
-    doc.roundedRect(M,y,W-M*2,8,1,1,"F");
-    doc.setDrawColor(...borde); doc.setLineWidth(.3);
-    doc.roundedRect(M,y,W-M*2,8,1,1,"S");
-    doc.setTextColor(100,120,140); doc.setFontSize(6.5); doc.setFont("helvetica","bold");
-    doc.text(l1.toUpperCase(),M+2,y+3);
-    doc.setTextColor(...negro); doc.setFontSize(8); doc.setFont("helvetica","normal");
-    doc.text(String(v1||"—"),M+2,y+7);
-    if(l2!==undefined){
-      doc.setTextColor(100,120,140); doc.setFontSize(6.5); doc.setFont("helvetica","bold");
-      doc.text(l2.toUpperCase(),M+half+6,y+3);
-      doc.setTextColor(...negro); doc.setFontSize(8); doc.setFont("helvetica","normal");
-      doc.text(String(v2||"—"),M+half+6,y+7);
+  let filaAlterna = false;
+  function fila2(l1, v1, l2, v2){
+    const col = filaAlterna ? [240,244,248] : GRIS_FILA;
+    filaAlterna = !filaAlterna;
+    doc.setFillColor(...col);
+    doc.rect(M, y, CW, 8.5, "F");
+    doc.setDrawColor(...BORDE_C);
+    doc.setLineWidth(0.2);
+    doc.rect(M, y, CW, 8.5, "S");
+    // Linea divisoria central
+    doc.setDrawColor(...BORDE_C);
+    doc.line(M+CW/2, y, M+CW/2, y+8.5);
+
+    const col1x = M+3;
+    const col2x = M+CW/2+3;
+
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(6);
+    doc.setTextColor(...GRIS_LBL);
+    doc.text(l1, col1x, y+3);
+
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...NEGRO);
+    doc.text(limpiar(v1), col1x, y+7.5);
+
+    if(l2){
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(6);
+      doc.setTextColor(...GRIS_LBL);
+      doc.text(l2, col2x, y+3);
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(8);
+      doc.setTextColor(...NEGRO);
+      doc.text(limpiar(v2), col2x, y+7.5);
     }
-    y+=10;
+    y += 9;
   }
 
-  function fila1(l,val){
-    doc.setFillColor(...gris);
-    doc.roundedRect(M,y,W-M*2,8,1,1,"F");
-    doc.setDrawColor(...borde); doc.setLineWidth(.3);
-    doc.roundedRect(M,y,W-M*2,8,1,1,"S");
-    doc.setTextColor(100,120,140); doc.setFontSize(6.5); doc.setFont("helvetica","bold");
-    doc.text(l.toUpperCase(),M+2,y+3);
-    doc.setTextColor(...negro); doc.setFontSize(8); doc.setFont("helvetica","normal");
-    doc.text(String(val||"—"),M+2,y+7);
-    y+=10;
+  function fila1(l, val){
+    const col = filaAlterna ? [240,244,248] : GRIS_FILA;
+    filaAlterna = !filaAlterna;
+    doc.setFillColor(...col);
+    doc.rect(M, y, CW, 8.5, "F");
+    doc.setDrawColor(...BORDE_C);
+    doc.setLineWidth(0.2);
+    doc.rect(M, y, CW, 8.5, "S");
+
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(6);
+    doc.setTextColor(...GRIS_LBL);
+    doc.text(l, M+3, y+3);
+
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...NEGRO);
+    doc.text(limpiar(val), M+3, y+7.5);
+    y += 9;
   }
 
-  // ─ Transportista ─
+  function espacio(n){ y += n||4; }
+
+  // ===================== SECCIONES =====================
+
+  // --- TRANSPORTISTA ---
+  filaAlterna = false;
   seccion("INFORMACION DEL TRANSPORTISTA");
-  fila2("Placa del Vehiculo",r.placa,"Nombre del Conductor",r.conductor);
-  fila2("Fecha Inicio Transporte",r.fechaInicio,"Hora de Salida",r.horaSalida);
-  fila2("Punto de Partida",r.puntoPartida,"Fecha Fin Transporte",r.fechaFin);
-  fila2("Hora de Llegada",r.horaLlegada,"Punto de Llegada",r.puntoLlegada);
-  fila2("Ruta del Transporte",r.ruta,"Guia MDI",r.guiaMdi);
-  fila2("Lugar de Pesca / Productor",r.lugarPesca,"Nro. Guia Remision/Pesca",r.nroGuia);
-  fila2("Codigo Recibidor",r.codRecibidor,"","");
-  y+=2;
+  fila2("PLACA DEL VEHICULO",       r.placa,       "NOMBRE DEL CONDUCTOR",    r.conductor);
+  fila2("FECHA INICIO TRANSPORTE",  r.fechaInicio, "HORA DE SALIDA",          r.horaSalida);
+  fila2("PUNTO DE PARTIDA",         r.puntoPartida,"FECHA FIN TRANSPORTE",    r.fechaFin);
+  fila2("HORA DE LLEGADA",          r.horaLlegada, "PUNTO DE LLEGADA",        r.puntoLlegada);
+  fila2("RUTA DEL TRANSPORTE",      r.ruta,        "GUIA MDI",                r.guiaMdi);
+  fila2("LUGAR DE PESCA / PRODUCTOR",r.lugarPesca, "NRO. GUIA REMISION/PESCA",r.nroGuia);
+  fila1("CODIGO RECIBIDOR",         r.codRecibidor);
+  espacio(4);
 
-  // ─ Despacho ─
+  // --- DESPACHO ---
+  filaAlterna = false;
   seccion("DESPACHO DE METABISULFITO DE SODIO PARA LA PESCA");
-  fila2("Fecha del Despacho",r.fechaDespacho,"Solicitado Por",r.solicitadoPor);
-  fila2("Despachado Por",r.despachador,"","");
-  fila2("Cantidad de Sacos",r.cantSacos||0,"Cantidad en KG",(r.cantKg||0)+" kg");
-  fila2("Lote del Saco",r.lote,"Marca del Saco",r.marca);
-  fila1("Numeracion del Saco",r.numSaco);
-  y+=2;
+  fila2("FECHA DEL DESPACHO",  r.fechaDespacho,  "SOLICITADO POR",     r.solicitadoPor);
+  fila2("DESPACHADO POR",      r.despachador,    "","");
+  fila2("CANTIDAD DE SACOS",   r.cantSacos||0,   "CANTIDAD EN KG",     (r.cantKg||0)+" kg");
+  fila2("LOTE DEL SACO",       r.lote,           "MARCA DEL SACO",     r.marca);
+  fila1("NUMERACION DEL SACO", r.numSaco);
+  espacio(4);
 
-  // ─ Devolución ─
+  // --- DEVOLUCION ---
+  filaAlterna = false;
   seccion("DEVOLUCION DE METABISULFITO DE SODIO DESDE LA PESCA");
-  fila2("Fecha de la Devolucion",r.fechaDev,"Devolucion Cantidad en Sacos",r.devSacos||0);
-  fila2("Devolucion Cantidad en KG",(r.devKg||0)+" kg","Devolucion Numeracion del Saco",r.devNumSaco);
-  y+=2;
+  fila2("FECHA DE LA DEVOLUCION",       r.fechaDev,          "DEVOLUCION CANTIDAD EN SACOS", r.devSacos||0);
+  fila2("DEVOLUCION CANTIDAD EN KG",    (r.devKg||0)+" kg",  "DEVOLUCION NUMERACION SACO",   r.devNumSaco);
+  espacio(4);
 
-  // ─ KG Utilizados ─
-  const kgUsado=(r.cantKg||0)-(r.devKg||0);
-  doc.setFillColor(...azulOsc);
-  doc.roundedRect(M,y,W-M*2,12,2,2,"F");
-  doc.setTextColor(...azulCla); doc.setFontSize(8); doc.setFont("helvetica","bold");
-  doc.text("KG EFECTIVAMENTE UTILIZADOS:",M+4,y+5);
-  doc.setTextColor(...blanco); doc.setFontSize(11);
-  doc.text(kgUsado.toFixed(2)+" KG",M+4,y+11);
-  y+=16;
+  // --- KG UTILIZADOS ---
+  const kgUsado = (parseFloat(r.cantKg)||0) - (parseFloat(r.devKg)||0);
+  doc.setFillColor(...AZUL_OSC);
+  doc.rect(M, y, CW, 11, "F");
+  doc.setFillColor(...AZUL_ACA);
+  doc.rect(M, y, 3, 11, "F");
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(7);
+  doc.setTextColor(180, 210, 230);
+  doc.text("KG EFECTIVAMENTE UTILIZADOS:", M+6, y+4.5);
+  doc.setFontSize(11);
+  doc.setTextColor(...BLANCO);
+  doc.text(kgUsado.toFixed(2)+" KG", M+6, y+9.5);
+  espacio(15);
 
-  // ─ Observaciones ─
+  // --- OBSERVACIONES ---
   if(r.observacion){
+    filaAlterna = false;
     seccion("OBSERVACIONES");
-    doc.setFillColor(...gris);
-    doc.roundedRect(M,y,W-M*2,14,1,1,"F");
-    doc.setTextColor(...negro); doc.setFontSize(8); doc.setFont("helvetica","normal");
-    const lines=doc.splitTextToSize(r.observacion,W-M*2-4);
-    doc.text(lines,M+2,y+5);
-    y+=18;
+    doc.setFillColor(...GRIS_FILA);
+    doc.rect(M, y, CW, 14, "F");
+    doc.setDrawColor(...BORDE_C);
+    doc.setLineWidth(0.2);
+    doc.rect(M, y, CW, 14, "S");
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...NEGRO);
+    const lines = doc.splitTextToSize(limpiar(r.observacion), CW-6);
+    doc.text(lines, M+3, y+5);
+    espacio(18);
   }
 
-  // ─ Firmas ─
-  y+=4;
-  doc.setDrawColor(...borde); doc.setLineWidth(.4);
-  const fw=55, gap=(W-M*2-fw*3)/2;
-  [["ENCARGADO DE DESPACHO",r.despachador||""],["TRANSPORTISTA",r.conductor||""],["RECIBIDO POR",r.solicitadoPor||""]].forEach(([t,n],i)=>{
-    const x=M+i*(fw+gap);
-    doc.line(x,y+10,x+fw,y+10);
-    doc.setTextColor(100,120,140); doc.setFontSize(7); doc.setFont("helvetica","bold");
-    doc.text(t,x+fw/2,y+14,{align:"center"});
-    doc.setTextColor(...negro); doc.setFontSize(8); doc.setFont("helvetica","normal");
-    doc.text(n,x+fw/2,y+19,{align:"center"});
+  // --- FIRMAS ---
+  espacio(6);
+  doc.setDrawColor(...BORDE_C);
+  doc.setLineWidth(0.4);
+  const fw = 52;
+  const totalFirmas = fw*3;
+  const gap = (CW - totalFirmas) / 2;
+  const firmas = [
+    ["ENCARGADO DE DESPACHO", limpiar(r.despachador)],
+    ["TRANSPORTISTA",         limpiar(r.conductor)],
+    ["RECIBIDO POR",          limpiar(r.solicitadoPor)]
+  ];
+  firmas.forEach(([titulo, nombre], i) => {
+    const x = M + i*(fw+gap);
+    doc.line(x, y+10, x+fw, y+10);
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...GRIS_LBL);
+    doc.text(titulo, x+fw/2, y+14, {align:"center"});
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...NEGRO);
+    doc.text(nombre, x+fw/2, y+19, {align:"center"});
   });
 
-  // ─ Footer ─
-  doc.setFillColor(...azulOsc);
-  doc.rect(0,285,W,12,"F");
-  doc.setTextColor(...azulCla); doc.setFontSize(7); doc.setFont("helvetica","normal");
-  doc.text("FOR-BOD-05  -  Generado el "+new Date().toLocaleString("es-EC")+"  -  Control Metabisulfito Sta. Rosa",W/2,292,{align:"center"});
+  // --- FOOTER ---
+  doc.setFillColor(...AZUL_OSC);
+  doc.rect(0, 284, W, 13, "F");
+  doc.setFillColor(...AZUL_ACA);
+  doc.rect(0, 284, W, 1, "F");
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(6.5);
+  doc.setTextColor(150, 185, 210);
+  const ahora = new Date();
+  const ahoraStr = ahora.getDate()+"/"+(ahora.getMonth()+1)+"/"+ahora.getFullYear()+" "+ahora.getHours()+":"+String(ahora.getMinutes()).padStart(2,"0");
+  doc.text("FOR-BOD-05  |  Generado: "+ahoraStr+"  |  Control Metabisulfito de Sodio - Bodega Sta. Rosa", W/2, 291, {align:"center"});
+  doc.setFont("helvetica","bold");
+  doc.setTextColor(180, 210, 230);
+  doc.text("No. "+limpiar(r.numeracion), W/2, 294, {align:"center"});
 
-  doc.save("Despacho_"+r.numeracion+"_"+r.fechaDespacho+".pdf");
+  doc.save("Despacho_"+limpiar(r.numeracion)+"_"+(r.fechaDespacho||"sin-fecha")+".pdf");
 }
 
 // ─── USUARIOS ───
@@ -1012,8 +1172,1587 @@ window.toggleUser=async(uid,s)=>{await updateDoc(doc(db,CUSR,uid),{activo:s});sh
 window.changeRole=async(uid,r)=>{if(!confirm("¿Cambiar rol a "+r+"?"))return;await updateDoc(doc(db,CUSR,uid),{rol:r});showAlert("Rol actualizado.","info");cargarUsuarios();};
 
 // ─── SWITCH TAB ───
+
+
+// ─── AUTO PLACA desde conductor ───
+window.autoPlaca = function(val){
+  const sel = document.getElementById("f-conductor");
+  const opt = sel ? sel.querySelector('option[value="'+val+'"]') : null;
+  const placa = opt ? (opt.getAttribute("data-placa") || "") : "";
+  const placaInput = document.getElementById("f-placa");
+  const manualWrap = document.getElementById("f-conductor-manual-wrap");
+  if(!placaInput) return;
+  if(val === "OTRO"){
+    placaInput.removeAttribute("readonly");
+    placaInput.style.background = "var(--bg)";
+    placaInput.style.color = "var(--text)";
+    placaInput.style.fontWeight = "normal";
+    placaInput.style.letterSpacing = "normal";
+    placaInput.value = "";
+    placaInput.placeholder = "Ingresa la placa manualmente";
+    if(manualWrap) manualWrap.style.display = "flex";
+  } else {
+    placaInput.setAttribute("readonly","true");
+    placaInput.style.background = "#070e1a";
+    placaInput.style.color = "var(--cyan)";
+    placaInput.style.fontWeight = "700";
+    placaInput.style.letterSpacing = "2px";
+    placaInput.value = placa;
+    if(manualWrap) manualWrap.style.display = "none";
+  }
+};
+
+// ─── KARDEX ───
+// Estructura igual al Excel FOR-BOD-05:
+// Cada despacho genera 1 fila de EGRESO (cantKg despachado)
+// Cada devolucion genera 1 fila de INGRESO (devKg devuelto)
+// El saldo corre en tiempo real: saldo = saldo_anterior + ingresos - egresos
+// Los sitios del Excel se mapean a los valores de lugarPesca/puntoLlegada ingresados
+
+const SITIO_LABELS = {
+  "todos":                          "Todos los sitios - Consolidado",
+  "Icemart-Logistica":              "Icemart - Logistica",
+  "Mare Sta. Rosa":                 "Mare Sta. Rosa",
+  "Mare El Cambio":                 "Mare El Cambio",
+  "Icemart-Mare":                   "Icemart - Mare",
+};
+
+window.cargarKardex = async function(){
+  const sitioKey = (document.getElementById("k-sitio")?.value || "todos").trim();
+  const desde    = document.getElementById("k-desde")?.value || "";
+  const hasta    = document.getElementById("k-hasta")?.value || "";
+  const wrap     = document.getElementById("tabla-kardex");
+  if(!wrap) return;
+
+  wrap.innerHTML = '<div class="empty"><span class="spinner"></span> Calculando kardex...</div>';
+
+  try {
+    // Traer todos los despachos ordenados por fecha
+    const q = query(collection(db, CDESP), orderBy("fechaDespacho","asc"), orderBy("createdAt","asc"));
+    const snap = await getDocs(q);
+    const todos = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+
+    // Filtrar por sitio
+    let movsBase = todos;
+    if(sitioKey !== "todos"){
+      movsBase = todos.filter(r => {
+        const lugar = (r.lugarPesca||"").toLowerCase();
+        const destino = (r.puntoLlegada||"").toLowerCase();
+        const combinado = lugar + " " + destino;
+        // Normalizar key para busqueda flexible
+        const palabras = sitioKey.toLowerCase()
+          .replace("icemart","").replace("logistica","logist")
+          .replace("sta. rosa","sta rosa").replace("el cambio","cambio")
+          .split(" ").filter(p=>p.length>2);
+        return palabras.some(p => combinado.includes(p));
+      });
+      // Si no matchea nada, mostrar todos (para sitios sin lugar pesca definido)
+      if(movsBase.length === 0) movsBase = todos;
+    }
+
+    // Filtrar por fecha
+    if(desde) movsBase = movsBase.filter(r => (r.fechaDespacho||"") >= desde);
+    if(hasta) movsBase = movsBase.filter(r => (r.fechaDespacho||"") <= hasta);
+
+    // ── Construir filas del kardex ──
+    // Cada despacho genera SIEMPRE una fila de egreso.
+    // Si tiene devolucion > 0, genera ADEMAS una fila de ingreso.
+    // Esto replica exactamente la logica del Excel.
+    const filas = [];
+    movsBase.forEach(r => {
+      const kg   = parseFloat(r.cantKg)  || 0;
+      const devkg= parseFloat(r.devKg)   || 0;
+      // Fila EGRESO (despacho)
+      if(kg > 0){
+        filas.push({
+          tipo:       "EGRESO",
+          fecha:      r.fechaDespacho || "-",
+          kg:         kg,
+          marca:      r.marca  || "-",
+          lote:       r.lote   || "-",
+          numSaco:    r.numSaco|| "-",
+          docRef:     r.numeracion || "-",
+          docEgreso:  r.nroGuia || r.guiaMdi || "-",
+          placa:      r.placa  || "-",
+          destino:    r.lugarPesca || r.puntoLlegada || "-",
+          conductor:  r.conductor  || "-",
+          solicitado: r.solicitadoPor || "-",
+          _raw: r,
+        });
+      }
+      // Fila INGRESO (devolucion desde pesca)
+      if(devkg > 0){
+        filas.push({
+          tipo:       "INGRESO",
+          fecha:      r.fechaDev || r.fechaDespacho || "-",
+          kg:         devkg,
+          marca:      r.marca    || "-",
+          lote:       r.lote     || "-",
+          numSaco:    r.devNumSaco || "-",
+          docRef:     "DEV-" + (r.numeracion||"-"),
+          docEgreso:  "-",
+          placa:      r.placa    || "-",
+          destino:    r.lugarPesca || "-",
+          conductor:  r.conductor  || "-",
+          solicitado: r.solicitadoPor || "-",
+          _raw: r,
+        });
+      }
+    });
+
+    // ── Calcular saldo corriente ──
+    let saldo = 0;
+    let totalIng = 0, totalEgr = 0;
+    const filasConSaldo = filas.map((f, i) => {
+      const saldoIni = saldo;
+      if(f.tipo === "INGRESO"){
+        saldo += f.kg;
+        totalIng += f.kg;
+      } else {
+        saldo -= f.kg;
+        totalEgr += f.kg;
+      }
+      return { ...f, saldoInicial: saldoIni, saldoFinal: saldo };
+    });
+
+    // ── Stats ──
+    const statsEl = document.getElementById("k-stats");
+    if(statsEl) statsEl.style.display = "grid";
+    const set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+    set("k-total-ing", totalIng.toFixed(1)+" kg");
+    set("k-total-egr", totalEgr.toFixed(1)+" kg");
+    set("k-saldo-act", saldo.toFixed(1)+" kg");
+    set("k-movs", filasConSaldo.length);
+
+    if(!filasConSaldo.length){
+      wrap.innerHTML = '<div class="empty">Sin movimientos para este sitio. Ingresa despachos primero.</div>';
+      return;
+    }
+
+    // ── Render tabla ──
+    const colorIng = "var(--green)";
+    const colorEgr = "var(--orange)";
+
+    wrap.innerHTML = `<div class="tbl-wrap"><table style="min-width:900px">
+      <thead>
+        <tr style="background:var(--bg)">
+          <th colspan="7" style="background:#052e1a;color:var(--green);text-align:center;padding:6px">INGRESOS (Devoluciones de pesca / Transferencias)</th>
+          <th colspan="6" style="background:#2d1a00;color:var(--orange);text-align:center;padding:6px">EGRESOS (Despachos)</th>
+          <th colspan="3" style="background:var(--bg);text-align:center;padding:6px">SALDO / REFERENCIA</th>
+        </tr>
+        <tr>
+          <th>No.</th>
+          <th>Fecha</th>
+          <th>Saldo Inicial</th>
+          <th>Doc. Ingreso</th>
+          <th>KG Ingreso</th>
+          <th>Marca Ing.</th>
+          <th>Lote / Num. Saco</th>
+          <th>Doc. Egreso</th>
+          <th>KG Egreso</th>
+          <th>Marca Egr.</th>
+          <th>Lote / Num. Saco</th>
+          <th>Destino</th>
+          <th>Placa</th>
+          <th style="background:#0a1f35;color:var(--cyan)">Saldo Final</th>
+          <th>Nro Guia</th>
+          <th>Conductor</th>
+        </tr>
+      </thead>
+      <tbody>${filasConSaldo.map((f,i) => {
+        const esIng = f.tipo === "INGRESO";
+        const rowBg = esIng ? "background:#052e1a1a" : "background:#2d1a001a";
+        return `<tr style="${rowBg}">
+          <td><span class="badge ${esIng?"b-green":"b-orange"}">${String(i+1).padStart(2,"0")}</span></td>
+          <td style="white-space:nowrap;font-size:12px">${f.fecha}</td>
+          <td style="text-align:right;font-family:monospace;color:var(--muted);font-size:12px">${f.saldoInicial.toFixed(0)} kg</td>
+          ${esIng ? `
+            <td style="font-size:11px;color:var(--green)">${f.docRef}</td>
+            <td style="text-align:right;font-family:monospace;font-weight:700;color:var(--green)">${f.kg.toFixed(1)} kg</td>
+            <td style="font-size:11px">${f.marca}</td>
+            <td style="font-size:11px">${f.lote} / ${f.numSaco}</td>
+            <td colspan="5" style="color:var(--muted);font-size:11px;text-align:center">—</td>
+          ` : `
+            <td colspan="4" style="color:var(--muted);font-size:11px;text-align:center">—</td>
+            <td style="font-size:11px;color:var(--orange)">${f.docEgreso}</td>
+            <td style="text-align:right;font-family:monospace;font-weight:700;color:var(--orange)">${f.kg.toFixed(1)} kg</td>
+            <td style="font-size:11px">${f.marca}</td>
+            <td style="font-size:11px">${f.lote} / ${f.numSaco}</td>
+            <td style="font-size:12px">${f.destino}</td>
+            <td style="font-size:11px;color:var(--cyan);font-family:monospace">${f.placa}</td>
+          `}
+          <td style="text-align:right;font-family:monospace;font-weight:800;font-size:13px;${f.saldoFinal>=0?"color:var(--cyan)":"color:var(--red);background:#2d0a0a"}">${f.saldoFinal.toFixed(0)} kg</td>
+          <td style="font-size:11px">${f._raw.guiaMdi||f._raw.nroGuia||"-"}</td>
+          <td style="font-size:11px">${f.conductor}</td>
+        </tr>`;
+      }).join("")}
+      </tbody>
+      <tfoot>
+        <tr style="border-top:2px solid var(--border2)">
+          <td colspan="3" style="color:var(--muted);font-weight:700;font-size:11px">TOTALES DEL PERIODO</td>
+          <td></td>
+          <td style="text-align:right;color:var(--green);font-weight:800;font-family:monospace">${totalIng.toFixed(1)} kg</td>
+          <td colspan="3"></td>
+          <td style="text-align:right;color:var(--orange);font-weight:800;font-family:monospace">${totalEgr.toFixed(1)} kg</td>
+          <td colspan="4"></td>
+          <td style="text-align:right;color:var(--cyan);font-weight:800;font-family:monospace">${saldo.toFixed(1)} kg</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table></div>`;
+
+  } catch(e){
+    wrap.innerHTML = '<div class="empty">Error al cargar: '+limpiar(e.message)+'</div>';
+    console.error(e);
+  }
+};
+
 window.switchTab=function(i){
-  [0,1,2,3,4].forEach(j=>{
+  [0,1,2,3,4,5].forEach(j=>{
+    const t=g("tab-"+j); if(t) t.style.display=j===i?"block":"none";
+    const n=g("nav-"+j); if(n) n.classList.toggle("active",j===i);
+  });
+  if(i===1&&curRole==="admin") renderDashboard();
+};
+
+// ─── UTILS ───
+function v(id){return g(id)?.value.trim()||"";}
+function g(id){return document.getElementById(id);}
+function show(id,d="block"){g(id).style.display=d;}
+function hide(id){g(id).style.display="none";}
+
+  const csel=document.getElementById("f-conductor");
+  if(csel) csel.value="";
+  const pf=document.getElementById("f-placa");
+  if(pf){pf.value="";pf.setAttribute("readonly","true");pf.style.background="#070e1a";pf.style.color="var(--cyan)";}
+  const mw=document.getElementById("f-conductor-manual-wrap"); if(mw) mw.style.display="none";DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="theme-color" content="#0d2035"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Metabisulfito"/>
+  <link rel="manifest" href="manifest.json"/>
+  <title>Control Metabisulfito — Sta. Rosa</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0a0f1a;--surface:#111827;--surface2:#1a2332;--card:#1e2d3d;
+      --border:#1f3347;--border2:#2d4a63;--text:#f0f6ff;--muted:#7a9bb5;
+      --blue:#3b9eff;--blue2:#1d6fa8;--cyan:#06d6f7;--green:#10e89a;
+      --orange:#ff8c42;--pink:#f06292;--yellow:#ffd166;--red:#ff5252;
+      --purple:#a78bfa;
+      --grad1:linear-gradient(135deg,#1d6fa8,#06d6f7);
+      --grad2:linear-gradient(135deg,#10b981,#06d6f7);
+      --grad3:linear-gradient(135deg,#f06292,#a78bfa);
+      --shadow:0 8px 32px rgba(0,0,0,.5);
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+
+    /* ===== LOADING ===== */
+    #loading-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+    .load-icon{font-size:64px;animation:float 2s ease-in-out infinite}
+    .load-bar{width:200px;height:3px;background:#1f3347;border-radius:99px;overflow:hidden}
+    .load-progress{height:100%;background:var(--grad1);border-radius:99px;animation:loadbar 2s ease-in-out infinite}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    @keyframes loadbar{0%{width:0%}100%{width:100%}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .spinner{display:inline-block;width:16px;height:16px;border:2px solid #ffffff30;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+
+    /* ===== LOGIN ===== */
+    #login-screen{display:none;position:fixed;inset:0;z-index:999;background:radial-gradient(ellipse at 50% 30%,#0d2540 0%,#0a0f1a 70%);align-items:center;justify-content:center;padding:20px}
+    .login-wrap{width:100%;max-width:420px;animation:fadeIn .4s ease}
+    .login-card{background:var(--surface);border:1px solid var(--border2);border-radius:24px;padding:40px 36px;box-shadow:var(--shadow)}
+    .login-header{text-align:center;margin-bottom:32px}
+    .login-icon{font-size:52px;display:block;margin-bottom:12px}
+    .login-title{font-size:20px;font-weight:800;color:#e0f4ff;letter-spacing:.5px}
+    .login-sub{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+    .lfield{margin-bottom:18px}
+    .lfield label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+    .lfield input{width:100%;background:var(--bg);border:1.5px solid var(--border2);border-radius:12px;padding:13px 16px;color:var(--text);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s}
+    .lfield input:focus{border-color:var(--blue)}
+    .btn-login{width:100%;background:var(--grad1);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;letter-spacing:.5px;transition:opacity .2s;margin-top:4px}
+    .btn-login:hover{opacity:.9}
+    .btn-login:disabled{opacity:.5;cursor:not-allowed}
+    .lerror{background:#2d0a0a;border:1px solid #991b1b;color:#fca5a5;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none}
+
+    /* ===== HEADER ===== */
+    .header{background:linear-gradient(135deg,#0d2035,#091624);border-bottom:1px solid var(--border2);padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+    .h-logo{width:40px;height:40px;background:var(--grad1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .h-info{flex:1;min-width:0}
+    .h-title{font-size:14px;font-weight:700;color:#e0f4ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .h-sub{font-size:10px;color:var(--muted);letter-spacing:1px}
+    .h-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .rbadge{border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;white-space:nowrap}
+    .rbadge-admin{background:#ffd16622;color:var(--yellow);border:1px solid #ffd16644}
+    .rbadge-operario{background:#3b9eff22;color:var(--blue);border:1px solid #3b9eff44}
+    .btn-out{background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif}
+
+    /* ===== BOTTOM NAV ===== */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--surface);border-top:1px solid var(--border2);display:flex;padding:0 0 env(safe-area-inset-bottom)}
+    .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;cursor:pointer;border:none;background:none;color:var(--muted);font-size:9px;font-family:'Inter',sans-serif;font-weight:600;letter-spacing:.5px;text-transform:uppercase;transition:color .2s;gap:4px}
+    .nav-btn .ni{font-size:20px;transition:transform .2s}
+    .nav-btn.active{color:var(--blue)}
+    .nav-btn.active .ni{transform:scale(1.15)}
+
+    /* ===== MAIN ===== */
+    .main{padding:16px 16px 90px;max-width:900px;margin:0 auto}
+
+    /* ===== SECTION ===== */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;animation:fadeIn .3s ease}
+    .card-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+    /* ===== FORM ===== */
+    .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+    .fgrid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+    .field input,.field select,.field textarea{
+      background:var(--bg);border:1.5px solid var(--border2);border-radius:10px;
+      padding:11px 13px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;
+      outline:none;transition:border-color .2s;width:100%;
+      -webkit-appearance:none;appearance:none
+    }
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue)}
+    .field textarea{resize:none;min-height:72px}
+    .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237a9bb5' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+
+    /* Date/time pickers look native but styled */
+    input[type="date"],input[type="time"]{color-scheme:dark;min-height:46px}
+
+    /* ===== BUTTONS ===== */
+    .btn{border:none;border-radius:12px;padding:13px 20px;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .btn-primary{background:var(--grad1);color:#fff;width:100%}
+    .btn-primary:hover:not(:disabled){opacity:.9}
+    .btn-sm{padding:6px 12px;font-size:12px;border-radius:8px;font-weight:600}
+    .btn-danger{background:#2d0a0a;color:var(--red);border:1px solid #991b1b}
+    .btn-info{background:#0a1f35;color:var(--blue);border:1px solid var(--border2)}
+    .btn-success{background:#052e1a;color:var(--green);border:1px solid #065f46}
+    .btn-warn{background:#2d1a00;color:var(--orange);border:1px solid #92400e}
+    .btn-ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+
+    /* ===== ALERTS ===== */
+    #alert-box{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:500;width:calc(100% - 32px);max-width:500px;pointer-events:none}
+    .alert{border-radius:12px;padding:12px 16px;font-size:13px;font-weight:600;box-shadow:var(--shadow);animation:fadeIn .3s ease;pointer-events:all}
+    .alert-success{background:#052e1a;border:1px solid #065f46;color:#6ee7b7}
+    .alert-error{background:#2d0a0a;border:1px solid #991b1b;color:#fca5a5}
+    .alert-info{background:#0a1f35;border:1px solid var(--border2);color:var(--blue)}
+
+    /* ===== BADGES ===== */
+    .badge{border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;display:inline-block;white-space:nowrap}
+    .b-blue{background:#3b9eff22;color:var(--blue);border:1px solid #3b9eff44}
+    .b-green{background:#10e89a22;color:var(--green);border:1px solid #10e89a44}
+    .b-orange{background:#ff8c4222;color:var(--orange);border:1px solid #ff8c4244}
+    .b-pink{background:#f0629222;color:var(--pink);border:1px solid #f0629244}
+    .b-yellow{background:#ffd16622;color:var(--yellow);border:1px solid #ffd16644}
+    .b-red{background:#ff525222;color:var(--red);border:1px solid #ff525244}
+    .b-purple{background:#a78bfa22;color:var(--purple);border:1px solid #a78bfa44}
+
+    /* ===== NUM BADGE ===== */
+    .num-badge{background:#0a1f35;border:1px solid var(--border2);border-radius:10px;padding:8px 16px;font-size:14px;color:var(--blue);font-weight:700;font-family:'JetBrains Mono',monospace}
+
+    /* ===== TOP BAR ===== */
+    .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+    .page-title{font-size:20px;font-weight:800;color:#e0f4ff}
+
+    /* ===== TABLE ===== */
+    .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px}
+    table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px}
+    th{background:var(--bg);color:var(--muted);padding:10px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid var(--border);white-space:nowrap}
+    td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+    tfoot td{border-top:2px solid var(--border2);font-weight:700}
+    .act{display:flex;gap:6px;flex-wrap:wrap}
+
+    /* ===== STATS GRID ===== */
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:16px}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;position:relative;overflow:hidden}
+    .stat-card::before{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;border-radius:50%;opacity:.1}
+    .stat-card.sc1::before{background:var(--blue)}
+    .stat-card.sc2::before{background:var(--orange)}
+    .stat-card.sc3::before{background:var(--green)}
+    .stat-card.sc4::before{background:var(--pink)}
+    .stat-card.sc5::before{background:var(--purple)}
+    .stat-icon{font-size:22px;margin-bottom:6px}
+    .stat-num{font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1.1}
+    .stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+    .sc1 .stat-num{color:var(--blue)}
+    .sc2 .stat-num{color:var(--orange)}
+    .sc3 .stat-num{color:var(--green)}
+    .sc4 .stat-num{color:var(--pink)}
+    .sc5 .stat-num{color:var(--purple)}
+
+    /* ===== CHARTS ===== */
+    .charts-grid{display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:640px){.charts-grid{grid-template-columns:1fr 1fr}}
+    .chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px}
+    .chart-title{font-size:12px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+    .chart-wrap{position:relative;height:220px}
+
+    /* ===== DESTINOS ===== */
+    .destinos-list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto}
+    .destino-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px}
+    .destino-bar-wrap{flex:1;height:6px;background:var(--border);border-radius:99px;overflow:hidden}
+    .destino-bar{height:100%;background:var(--grad1);border-radius:99px;transition:width .6s ease}
+    .destino-name{font-size:12px;font-weight:600;min-width:100px}
+    .destino-count{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+
+    /* ===== MODAL ===== */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:flex-end;justify-content:center;z-index:300;padding:0}
+    @media(min-width:600px){.modal-overlay{align-items:center;padding:20px}}
+    .modal-box{background:var(--surface);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:720px;max-height:92vh;overflow-y:auto}
+    @media(min-width:600px){.modal-box{border-radius:20px}}
+    .modal-handle{width:36px;height:4px;background:var(--border2);border-radius:99px;margin:0 auto 20px}
+    .modal-title{font-size:17px;font-weight:800;color:#e0f4ff;margin-bottom:16px}
+    .det-sec{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
+    .det-title{font-size:10px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px}
+    .det-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+    .det-row{display:flex;flex-direction:column;gap:2px}
+    .det-lbl{font-size:10px;color:var(--muted)}
+    .det-val{font-size:13px;font-weight:500}
+
+    /* ===== USUARIOS ===== */
+    .user-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+    .user-row:last-child{border-bottom:none}
+    .u-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+    .ua-admin{background:#ffd16622;color:var(--yellow);border:1px solid #ffd16644}
+    .ua-op{background:#3b9eff22;color:var(--blue);border:1px solid #3b9eff44}
+    .u-info{flex:1;min-width:0}
+    .u-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .u-email{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .u-actions{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+
+    /* ===== FILTERS ===== */
+    .filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(min-width:480px){.filter-grid{grid-template-columns:repeat(3,1fr)}}
+
+    /* ===== EMPTY ===== */
+    .empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px}
+    .empty .ei{font-size:40px;display:block;margin-bottom:10px;opacity:.5}
+
+    /* ===== SAFE AREA ===== */
+    .safe-bottom{height:env(safe-area-inset-bottom)}
+
+    @media(max-width:400px){
+      .fgrid{grid-template-columns:1fr 1fr}
+      .h-title{font-size:12px}
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="load-icon">🧪</div>
+  <div style="font-size:14px;color:#7a9bb5;font-weight:600">Iniciando sistema...</div>
+  <div class="load-bar"><div class="load-progress"></div></div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-header">
+        <span class="login-icon">🧪</span>
+        <div class="login-title">Control Metabisulfito</div>
+        <div class="login-sub">Bodega Sta. Rosa</div>
+      </div>
+      <div id="lerror" class="lerror"></div>
+      <div class="lfield">
+        <label>Correo electrónico</label>
+        <input id="l-email" type="email" placeholder="usuario@empresa.com" inputmode="email" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <div class="lfield">
+        <label>Contraseña</label>
+        <input id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <button class="btn-login" id="btn-login" onclick="doLogin()">INGRESAR AL SISTEMA</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" style="display:none">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="h-logo">🧪</div>
+    <div class="h-info">
+      <div class="h-title">Control Metabisulfito</div>
+      <div class="h-sub" id="h-user-name">—</div>
+    </div>
+    <div class="h-right">
+      <span id="h-role" class="rbadge rbadge-operario">operario</span>
+      <button class="btn-out" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <!-- ALERT -->
+  <div id="alert-box"></div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- ====== TAB 1: DASHBOARD (admin) ====== -->
+    <div id="tab-1" style="display:none">
+      <div class="top-bar">
+        <div class="page-title">Dashboard</div>
+        <button class="btn btn-sm btn-ghost" onclick="cargarTodo()">🔄 Actualizar</button>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card sc1"><div class="stat-icon">📋</div><div class="stat-num" id="s-total">0</div><div class="stat-label">Despachos</div></div>
+        <div class="stat-card sc2"><div class="stat-icon">📦</div><div class="stat-num" id="s-sacos">0</div><div class="stat-label">Sacos</div></div>
+        <div class="stat-card sc3"><div class="stat-icon">⬆️</div><div class="stat-num" id="s-kgd">0</div><div class="stat-label">KG Desp.</div></div>
+        <div class="stat-card sc4"><div class="stat-icon">⬇️</div><div class="stat-num" id="s-kgv">0</div><div class="stat-label">KG Dev.</div></div>
+        <div class="stat-card sc5"><div class="stat-icon">🔥</div><div class="stat-num" id="s-kgu">0</div><div class="stat-label">KG Usados</div></div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">📊 KG Despachados vs Devueltos por Mes</div>
+          <div class="chart-wrap"><canvas id="chart-mensual"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">📅 Sacos por Fecha</div>
+          <div class="chart-wrap"><canvas id="chart-sacos"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-grid" style="margin-top:14px">
+        <div class="chart-card">
+          <div class="chart-title">📈 KG Utilizados Acumulados</div>
+          <div class="chart-wrap"><canvas id="chart-acum"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">📍 Destinos / Lugares de Pesca</div>
+          <div id="chart-destinos" class="destinos-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== TAB 2: REGISTROS (admin) ====== -->
+    <div id="tab-2" style="display:none">
+      <div class="top-bar">
+        <div class="page-title">Registros</div>
+        <button class="btn btn-sm btn-ghost" onclick="cargarTodo()">🔄</button>
+      </div>
+      <div class="card">
+        <div id="tabla-registros"><div class="empty"><span class="ei">📋</span>Cargando...</div></div>
+      </div>
+    </div>
+
+    <!-- ====== TAB 3: REPORTES (admin) ====== -->
+    <div id="tab-3" style="display:none">
+      <div class="top-bar"><div class="page-title">Reportes</div></div>
+      <div class="card">
+        <div class="card-title">🔍 Filtros</div>
+        <div class="filter-grid">
+          <div class="field"><label>Desde</label><input id="r-desde" type="date" oninput="aplicarFiltros()"/></div>
+          <div class="field"><label>Hasta</label><input id="r-hasta" type="date" oninput="aplicarFiltros()"/></div>
+          <div class="field"><label>Conductor</label><input id="r-cond" type="text" placeholder="Buscar..." oninput="aplicarFiltros()"/></div>
+          <div class="field"><label>Solicitado Por</label><input id="r-soli" type="text" placeholder="Buscar..." oninput="aplicarFiltros()"/></div>
+          <div class="field"><label>Lugar de Pesca</label><input id="r-lugar" type="text" placeholder="Buscar..." oninput="aplicarFiltros()"/></div>
+        </div>
+        <div style="margin-top:12px"><button class="btn btn-sm btn-ghost" onclick="limpiarFiltros()">✕ Limpiar</button></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card sc1"><div class="stat-num" id="rs-total">0</div><div class="stat-label">Despachos</div></div>
+        <div class="stat-card sc2"><div class="stat-num" id="rs-sacos">0</div><div class="stat-label">Sacos</div></div>
+        <div class="stat-card sc3"><div class="stat-num" id="rs-kgd">0 kg</div><div class="stat-label">KG Desp.</div></div>
+        <div class="stat-card sc4"><div class="stat-num" id="rs-kgv">0 kg</div><div class="stat-label">KG Dev.</div></div>
+        <div class="stat-card sc5"><div class="stat-num" id="rs-kgu">0 kg</div><div class="stat-label">KG Usados</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 Detalle</div>
+        <div id="tabla-reporte"><div class="empty"><span class="ei">🔍</span>Aplica filtros</div></div>
+      </div>
+    </div>
+
+    <!-- ====== TAB 4: USUARIOS (admin) ====== -->
+    <div id="tab-4" style="display:none">
+      <div class="top-bar"><div class="page-title">Usuarios</div></div>
+      <div class="card">
+        <div class="card-title">➕ Crear Usuario</div>
+        <div class="fgrid">
+          <div class="field"><label>Nombre completo</label><input id="u-nombre" type="text" placeholder="Nombre"/></div>
+          <div class="field"><label>Correo electrónico</label><input id="u-email" type="email" placeholder="correo@empresa.com" inputmode="email"/></div>
+          <div class="field"><label>Contraseña temporal</label><input id="u-pass" type="text" placeholder="Mín. 6 caracteres"/></div>
+          <div class="field">
+            <label>Rol</label>
+            <select id="u-rol">
+              <option value="operario">Operario</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn btn-primary" id="btn-crear" onclick="crearUsuario()" style="max-width:260px">➕ CREAR USUARIO</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">👥 Usuarios Registrados</div>
+        <div id="lista-usuarios"><div class="empty">Cargando...</div></div>
+      </div>
+    </div>
+
+
+    <!-- ====== TAB 5: KARDEX (admin) ====== -->
+    <div id="tab-5" style="display:none">
+      <div class="top-bar">
+        <div class="page-title">Kardex de Movimientos</div>
+        <button class="btn btn-sm btn-ghost" onclick="cargarKardex()">&#8635; Actualizar</button>
+      </div>
+
+      <!-- Selector de sitio -->
+      <div class="card">
+        <div class="card-title">Seleccionar Bodega / Sitio</div>
+        <div class="fgrid">
+          <div class="field" style="grid-column:1/-1">
+            <label>Bodega</label>
+            <select id="k-sitio" onchange="cargarKardex()" style="background:var(--bg);border:1.5px solid var(--border2);border-radius:10px;padding:11px 13px;color:var(--text);font-size:14px;font-family:inherit;outline:none;width:100%">
+              <option value="todos">Todos los sitios (consolidado)</option>
+              <option value="LOGIST-Dic 2025">Icemart-Logistica Dic 2025</option>
+              <option value="LOGIST-Sta Rosa 2026">Mare Sta. Rosa 2026</option>
+              <option value="TELVER-China Resi MARE-STA ROSA">Mare Sta. Rosa 1 - Dic 2025</option>
+              <option value="Telver china Resiq MARE CAMBIO">Mare El Cambio</option>
+              <option value="CHINA MARE CAMBIO">Icemart-Mare Cambio</option>
+              <option value="CHINA-MARE-STA ROSA">Icemart-Mare Sta. Rosa</option>
+              <option value="MOLO-LOGIST">Icemart-Logistica Molo</option>
+              <option value="CHINA-LOGIST">Icemart-Logistica China</option>
+            </select>
+          </div>
+          <div class="field"><label>Fecha desde</label><input id="k-desde" type="date" oninput="cargarKardex()"/></div>
+          <div class="field"><label>Fecha hasta</label><input id="k-hasta" type="date" oninput="cargarKardex()"/></div>
+        </div>
+      </div>
+
+      <!-- Stats del kardex -->
+      <div class="stats-row" id="k-stats" style="display:none">
+        <div class="stat-card sc3"><div class="stat-num" id="k-total-ing" style="color:var(--green)">0 kg</div><div class="stat-label">Total Ingresos</div></div>
+        <div class="stat-card sc2"><div class="stat-num" id="k-total-egr" style="color:var(--orange)">0 kg</div><div class="stat-label">Total Egresos</div></div>
+        <div class="stat-card sc5"><div class="stat-num" id="k-saldo-act" style="color:var(--purple)">0 kg</div><div class="stat-label">Saldo Actual</div></div>
+        <div class="stat-card sc1"><div class="stat-num" id="k-movs">0</div><div class="stat-label">Movimientos</div></div>
+      </div>
+
+      <!-- Tabla kardex -->
+      <div class="card">
+        <div id="tabla-kardex"><div class="empty"><span class="ei">&#128196;</span>Selecciona una bodega para ver el kardex</div></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-btn active" id="nav-0" onclick="switchTab(0)"><span class="ni">📋</span>Ingresar</button>
+    <!-- admin navs added dynamically -->
+  </nav>
+
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target.id==='modal')closeModal()">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">Detalle</div>
+    <div id="modal-body"></div>
+    <div style="height:8px"></div>
+    <button class="btn btn-ghost btn-sm" onclick="closeModal()" style="width:100%">Cerrar</button>
+  </div>
+</div>
+
+<!-- PWA SERVICE WORKER INLINE -->
+<script>
+if('serviceWorker' in navigator){
+  const sw=`
+    const CACHE='metabisulfito-v1';
+    self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','/index.html']))));
+    self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>caches.match(e.request))));
+  `;
+  const blob=new Blob([sw],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob));
+}
+</script>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc,
+         setDoc, getDoc, query, orderBy, updateDoc }
+                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         signOut, onAuthStateChanged }
+                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const FB = {
+  apiKey:"AIzaSyA8Wvcv3MQNYJT-LNm3UBjG4ta1u-OwrGI",
+  authDomain:"lector-qr-25878.firebaseapp.com",
+  projectId:"lector-qr-25878",
+  storageBucket:"lector-qr-25878.firebasestorage.app",
+  messagingSenderId:"8007483133",
+  appId:"1:8007483133:web:60b74409d146ad8a0bc894"
+};
+const fbApp = initializeApp(FB);
+const db    = getFirestore(fbApp);
+const auth  = getAuth(fbApp);
+const CDESP = "metabisulfito_despachos";
+const CUSR  = "metabisulfito_usuarios";
+
+let curUser=null, curRole=null, curNombre="";
+let allReg=[], nextNum=1;
+let chartMensual=null, chartSacos=null, chartAcum=null;
+
+// ─── AUTH STATE ───
+onAuthStateChanged(auth, async user=>{
+  hide("loading-screen");
+  if(!user){ show("login-screen","flex"); return; }
+  try{
+    const snap=await getDoc(doc(db,CUSR,user.uid));
+    if(!snap.exists()){ await signOut(auth); showLoginErr("Cuenta no registrada."); show("login-screen","flex"); return; }
+    const d=snap.data();
+    if(d.activo===false){ await signOut(auth); showLoginErr("Cuenta desactivada. Contacta al admin."); show("login-screen","flex"); return; }
+    curUser=user; curRole=d.rol; curNombre=d.nombre||user.email;
+    initApp();
+  }catch(e){ hide("loading-screen"); show("login-screen","flex"); showLoginErr("Error: "+e.message); }
+});
+
+// ─── LOGIN ───
+window.doLogin=async function(){
+  const email=g("l-email").value.trim(), pass=g("l-pass").value;
+  if(!email||!pass){showLoginErr("Ingresa correo y contraseña.");return;}
+  const btn=g("btn-login"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Ingresando...';
+  g("lerror").style.display="none";
+  try{ await signInWithEmailAndPassword(auth,email,pass); }
+  catch(e){
+    let m="Correo o contraseña incorrectos.";
+    if(e.code==="auth/too-many-requests") m="Demasiados intentos. Espera unos minutos.";
+    showLoginErr(m); btn.disabled=false; btn.textContent="INGRESAR AL SISTEMA";
+  }
+};
+window.doLogout=async function(){
+  await signOut(auth); curUser=curRole=null; allReg=[];
+  hide("app-screen"); show("login-screen","flex");
+};
+
+// ─── INIT APP ───
+async function initApp(){
+  hide("login-screen"); show("app-screen","block");
+  g("h-user-name").textContent=curNombre;
+  const rb=g("h-role"); rb.textContent=curRole;
+  rb.className="rbadge "+(curRole==="admin"?"rbadge-admin":"rbadge-operario");
+  // Build nav
+  const nav=g("bottom-nav");
+  if(curRole==="admin"){
+    nav.innerHTML=`
+      <button class="nav-btn active" id="nav-0" onclick="switchTab(0)"><span class="ni" style="font-size:16px">&#9998;</span>Ingresar</button>
+      <button class="nav-btn" id="nav-1" onclick="switchTab(1)"><span class="ni" style="font-size:16px">&#9650;</span>Panel</button>
+      <button class="nav-btn" id="nav-2" onclick="switchTab(2)"><span class="ni" style="font-size:16px">&#9776;</span>Registros</button>
+      <button class="nav-btn" id="nav-3" onclick="switchTab(3)"><span class="ni" style="font-size:16px">&#9654;</span>Reportes</button>
+      <button class="nav-btn" id="nav-5" onclick="switchTab(5)"><span class="ni" style="font-size:16px">&#9783;</span>Kardex</button>
+      <button class="nav-btn" id="nav-4" onclick="switchTab(4)"><span class="ni" style="font-size:16px">&#9786;</span>Usuarios</button>`;  } else {
+    nav.innerHTML=`<button class="nav-btn active" id="nav-0" onclick="switchTab(0)"><span class="ni" style="font-size:16px">&#9998;</span>Ingresar</button>`;  }
+  switchTab(0);
+  await cargarTodo();
+}
+
+// ─── CARGAR DATOS ───
+window.cargarTodo=async function(){
+  try{
+    const q=query(collection(db,CDESP),orderBy("createdAt","desc"));
+    const snap=await getDocs(q);
+    allReg=snap.docs.map(d=>({id:d.id,...d.data()}));
+    nextNum=allReg.length>0?Math.max(...allReg.map(r=>parseInt(r.numeracion)||0))+1:1;
+    g("next-num").textContent=String(nextNum).padStart(5,"0");
+    if(curRole==="admin"){
+      renderDashboard();
+      renderTabla();
+      aplicarFiltros();
+      cargarUsuarios();
+    }
+  }catch(e){ showAlert("Error al cargar: "+e.message,"error"); }
+};
+
+// ─── GUARDAR ───
+window.guardarRegistro=async function(){
+  const conductorRaw=v("f-conductor");
+    const conductor = conductorRaw==="OTRO" ? v("f-conductor-manual") : conductorRaw;
+    const fechaDespacho=v("f-fechaDespacho");
+  if(!conductor||!fechaDespacho){showAlert("Faltan campos obligatorios: Conductor ★ y Fecha del Despacho ★","error");return;}
+  const btn=g("btn-guardar"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Guardando en Firebase...';
+  try{
+    const reg={
+      numeracion:String(nextNum).padStart(5,"0"),
+      ingresadoPor:curNombre, ingresadoPorUid:curUser.uid,
+      placa:v("f-placa"), conductor, fechaInicio:v("f-fechaInicio"),
+      horaSalida:v("f-horaSalida"), puntoPartida:v("f-puntoPartida"),
+      fechaFin:v("f-fechaFin"), horaLlegada:v("f-horaLlegada"),
+      puntoLlegada:v("f-puntoLlegada"), ruta:v("f-ruta"),
+      guiaMdi:v("f-guiaMdi"), lugarPesca:v("f-lugarPesca"),
+      nroGuia:v("f-nroGuia"), codRecibidor:v("f-codRecibidor"),
+      fechaDespacho, solicitadoPor:v("f-solicitadoPor"),
+      despachador:v("f-despachador"),
+      cantSacos:parseFloat(v("f-cantSacos"))||0,
+      cantKg:parseFloat(v("f-cantKg"))||0,
+      lote:v("f-lote"), marca:v("f-marca"), numSaco:v("f-numSaco"),
+      fechaDev:v("f-fechaDev"),
+      devSacos:parseFloat(v("f-devSacos"))||0,
+      devKg:parseFloat(v("f-devKg"))||0,
+      devNumSaco:v("f-devNumSaco"), observacion:v("f-obs"),
+      createdAt:new Date().toISOString()
+    };
+    await addDoc(collection(db,CDESP),reg);
+    generarPDF(reg);
+    limpiarForm();
+    await cargarTodo();
+    showAlert("✅ Registro N° "+reg.numeracion+" guardado. PDF generado automáticamente.","success");
+  }catch(e){ showAlert("Error: "+e.message,"error"); }
+  btn.disabled=false; btn.textContent="✅ GUARDAR REGISTRO";
+};
+
+// ─── ELIMINAR ───
+window.eliminarRegistro=async function(id){
+  if(!confirm("¿Eliminar este registro?")) return;
+  try{ await deleteDoc(doc(db,CDESP,id)); await cargarTodo(); showAlert("Registro eliminado.","info"); }
+  catch(e){ showAlert("Error: "+e.message,"error"); }
+};
+
+// ─── DASHBOARD ───
+function renderDashboard(){
+  const tkd=allReg.reduce((s,r)=>s+(r.cantKg||0),0);
+  const tkv=allReg.reduce((s,r)=>s+(r.devKg||0),0);
+  const ts=allReg.reduce((s,r)=>s+(r.cantSacos||0),0);
+  g("s-total").textContent=allReg.length;
+  g("s-sacos").textContent=ts;
+  g("s-kgd").textContent=tkd.toFixed(1)+" kg";
+  g("s-kgv").textContent=tkv.toFixed(1)+" kg";
+  g("s-kgu").textContent=(tkd-tkv).toFixed(1)+" kg";
+  buildChartMensual(); buildChartSacos(); buildChartAcum(); buildDestinos();
+}
+
+function buildChartMensual(){
+  const map={};
+  allReg.forEach(r=>{
+    if(!r.fechaDespacho) return;
+    const k=r.fechaDespacho.slice(0,7);
+    if(!map[k]) map[k]={d:0,v:0};
+    map[k].d+=r.cantKg||0; map[k].v+=r.devKg||0;
+  });
+  const labels=Object.keys(map).sort().slice(-8);
+  const desp=labels.map(k=>+map[k].d.toFixed(1));
+  const dev=labels.map(k=>+map[k].v.toFixed(1));
+  const ctx=g("chart-mensual").getContext("2d");
+  if(chartMensual) chartMensual.destroy();
+  chartMensual=new Chart(ctx,{
+    type:"bar",
+    data:{labels:labels.map(l=>{ const[y,m]=l.split("-"); return["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][parseInt(m)-1]+"/"+y.slice(2); }),
+      datasets:[
+        {label:"KG Despachados",data:desp,backgroundColor:"#3b9eff88",borderColor:"#3b9eff",borderWidth:2,borderRadius:6},
+        {label:"KG Devueltos",data:dev,backgroundColor:"#10e89a88",borderColor:"#10e89a",borderWidth:2,borderRadius:6}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#7a9bb5",font:{size:10}}}},scales:{x:{ticks:{color:"#7a9bb5",font:{size:10}},grid:{color:"#1f3347"}},y:{ticks:{color:"#7a9bb5",font:{size:10}},grid:{color:"#1f3347"}}}}
+  });
+}
+
+function buildChartSacos(){
+  const map={};
+  allReg.forEach(r=>{ if(!r.fechaDespacho) return; map[r.fechaDespacho]=(map[r.fechaDespacho]||0)+(r.cantSacos||0); });
+  const labels=Object.keys(map).sort().slice(-10);
+  const data=labels.map(k=>map[k]);
+  const ctx=g("chart-sacos").getContext("2d");
+  if(chartSacos) chartSacos.destroy();
+  chartSacos=new Chart(ctx,{
+    type:"line",
+    data:{labels,datasets:[{label:"Sacos",data,fill:true,backgroundColor:"#a78bfa22",borderColor:"#a78bfa",borderWidth:2,tension:.4,pointBackgroundColor:"#a78bfa",pointRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#7a9bb5",font:{size:10}}}},scales:{x:{ticks:{color:"#7a9bb5",font:{size:9},maxRotation:40},grid:{color:"#1f3347"}},y:{ticks:{color:"#7a9bb5",font:{size:10}},grid:{color:"#1f3347"}}}}
+  });
+}
+
+function buildChartAcum(){
+  const sorted=[...allReg].filter(r=>r.fechaDespacho).sort((a,b)=>a.fechaDespacho.localeCompare(b.fechaDespacho));
+  let acum=0;
+  const labels=[], data=[];
+  sorted.forEach(r=>{ acum+=(r.cantKg||0)-(r.devKg||0); labels.push(r.fechaDespacho); data.push(+acum.toFixed(1)); });
+  const ctx=g("chart-acum").getContext("2d");
+  if(chartAcum) chartAcum.destroy();
+  chartAcum=new Chart(ctx,{
+    type:"line",
+    data:{labels:labels.slice(-20),datasets:[{label:"KG Utilizados Acum.",data:data.slice(-20),fill:true,backgroundColor:"#ff8c4222",borderColor:"#ff8c42",borderWidth:2,tension:.4,pointRadius:3,pointBackgroundColor:"#ff8c42"}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#7a9bb5",font:{size:10}}}},scales:{x:{ticks:{color:"#7a9bb5",font:{size:9},maxRotation:40},grid:{color:"#1f3347"}},y:{ticks:{color:"#7a9bb5",font:{size:10}},grid:{color:"#1f3347"}}}}
+  });
+}
+
+function buildDestinos(){
+  const map={};
+  allReg.forEach(r=>{ if(r.lugarPesca) map[r.lugarPesca]=(map[r.lugarPesca]||0)+1; });
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const max=sorted[0]?.[1]||1;
+  const wrap=g("chart-destinos");
+  if(!sorted.length){ wrap.innerHTML='<div class="empty" style="padding:20px">Sin datos de destinos</div>'; return; }
+  wrap.innerHTML=sorted.map(([n,c])=>`
+    <div class="destino-row">
+      <div class="destino-name">${n}</div>
+      <div class="destino-bar-wrap"><div class="destino-bar" style="width:${(c/max*100).toFixed(0)}%"></div></div>
+      <div class="destino-count">${c} desp.</div>
+    </div>`).join("");
+}
+
+// ─── RENDER TABLA ───
+function renderTabla(){
+  const wrap=g("tabla-registros");
+  if(!allReg.length){ wrap.innerHTML='<div class="empty"><span class="ei">📋</span>Sin registros aún</div>'; return; }
+  wrap.innerHTML=`<div class="tbl-wrap"><table>
+    <thead><tr><th>N°</th><th>Fecha</th><th>Conductor</th><th>Placa</th><th>Lugar Pesca</th><th>Sacos</th><th>KG D.</th><th>KG Dev.</th><th>Por</th><th>Acc.</th></tr></thead>
+    <tbody>${allReg.map(r=>`<tr>
+      <td><span class="badge b-blue">${r.numeracion}</span></td>
+      <td style="white-space:nowrap">${r.fechaDespacho||"—"}</td>
+      <td>${r.conductor||"—"}</td><td>${r.placa||"—"}</td>
+      <td>${r.lugarPesca||"—"}</td><td>${r.cantSacos||"—"}</td>
+      <td>${r.cantKg?r.cantKg+" kg":"—"}</td>
+      <td>${r.devKg?'<span class="badge b-green">'+r.devKg+' kg</span>':'<span style="color:var(--muted)">—</span>'}</td>
+      <td style="font-size:11px;color:var(--muted)">${r.ingresadoPor||"—"}</td>
+      <td><div class="act">
+        <button class="btn btn-sm btn-info" onclick="verDetalle('${r.id}')">Ver</button>
+        <button class="btn btn-sm btn-info" onclick="pdfRegistro('${r.id}')">PDF</button>
+        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro('${r.id}')">🗑</button>
+      </div></td>
+    </tr>`).join("")}
+    </tbody></table></div>`;
+}
+
+// ─── FILTROS ───
+window.aplicarFiltros=function(){
+  const desde=g("r-desde").value, hasta=g("r-hasta").value;
+  const cond=g("r-cond").value.toLowerCase(), soli=g("r-soli").value.toLowerCase(), lugar=g("r-lugar").value.toLowerCase();
+  const f=allReg.filter(r=>{
+    if(desde&&r.fechaDespacho<desde) return false;
+    if(hasta&&r.fechaDespacho>hasta) return false;
+    if(cond&&!(r.conductor||"").toLowerCase().includes(cond)) return false;
+    if(soli&&!(r.solicitadoPor||"").toLowerCase().includes(soli)) return false;
+    if(lugar&&!(r.lugarPesca||"").toLowerCase().includes(lugar)) return false;
+    return true;
+  });
+  const tkd=f.reduce((s,r)=>s+(r.cantKg||0),0);
+  const tkv=f.reduce((s,r)=>s+(r.devKg||0),0);
+  const ts=f.reduce((s,r)=>s+(r.cantSacos||0),0);
+  g("rs-total").textContent=f.length; g("rs-sacos").textContent=ts;
+  g("rs-kgd").textContent=tkd.toFixed(1)+" kg"; g("rs-kgv").textContent=tkv.toFixed(1)+" kg"; g("rs-kgu").textContent=(tkd-tkv).toFixed(1)+" kg";
+  const wrap=g("tabla-reporte");
+  if(!f.length){wrap.innerHTML='<div class="empty"><span class="ei">🔍</span>Sin resultados</div>';return;}
+  wrap.innerHTML=`<div class="tbl-wrap"><table>
+    <thead><tr><th>N°</th><th>Fecha</th><th>Conductor</th><th>Lugar Pesca</th><th>Sol. Por</th><th>Sacos</th><th>KG D.</th><th>KG Dev.</th><th>KG Usado</th></tr></thead>
+    <tbody>${f.map(r=>{const u=(r.cantKg||0)-(r.devKg||0);return`<tr>
+      <td><span class="badge b-blue">${r.numeracion}</span></td>
+      <td>${r.fechaDespacho||"—"}</td><td>${r.conductor||"—"}</td>
+      <td>${r.lugarPesca||"—"}</td><td>${r.solicitadoPor||"—"}</td>
+      <td>${r.cantSacos||"—"}</td><td>${r.cantKg?r.cantKg+" kg":"—"}</td>
+      <td>${r.devKg?r.devKg+" kg":"—"}</td>
+      <td><span class="badge b-pink">${u.toFixed(1)} kg</span></td>
+    </tr>`}).join("")}
+    </tbody>
+    <tfoot><tr><td colspan="5" style="color:var(--muted)">TOTALES</td>
+      <td>${ts}</td><td style="color:var(--orange)">${tkd.toFixed(1)} kg</td>
+      <td style="color:var(--green)">${tkv.toFixed(1)} kg</td>
+      <td style="color:var(--pink)">${(tkd-tkv).toFixed(1)} kg</td>
+    </tr></tfoot></table></div>`;
+};
+window.limpiarFiltros=function(){
+  ["r-desde","r-hasta","r-cond","r-soli","r-lugar"].forEach(id=>g(id).value="");
+  aplicarFiltros();
+};
+
+// ─── VER DETALLE ───
+window.verDetalle=function(id){
+  const r=allReg.find(x=>x.id===id); if(!r) return;
+  g("modal-title").textContent="Orden de Despacho N° "+r.numeracion;
+  const f=(l,val)=>val?`<div class="det-row"><div class="det-lbl">${l}</div><div class="det-val">${val}</div></div>`:"";
+  g("modal-body").innerHTML=`
+    <div class="det-sec"><div class="det-title">🚛 Transportista</div><div class="det-grid">
+      ${f("Placa",r.placa)}${f("Conductor",r.conductor)}
+      ${f("F. Inicio",r.fechaInicio)}${f("H. Salida",r.horaSalida)}
+      ${f("Punto Partida",r.puntoPartida)}${f("F. Fin",r.fechaFin)}
+      ${f("H. Llegada",r.horaLlegada)}${f("Punto Llegada",r.puntoLlegada)}
+      ${f("Ruta",r.ruta)}${f("Guía MDI",r.guiaMdi)}
+      ${f("Lugar Pesca",r.lugarPesca)}${f("Nro. Guía",r.nroGuia)}
+      ${f("Cód. Recibidor",r.codRecibidor)}
+    </div></div>
+    <div class="det-sec"><div class="det-title">📦 Despacho</div><div class="det-grid">
+      ${f("Fecha",r.fechaDespacho)}${f("Solicitado Por",r.solicitadoPor)}
+      ${f("Despachado Por",r.despachador)}${f("Sacos",r.cantSacos)}
+      ${f("KG",r.cantKg?r.cantKg+" kg":"")}${f("Lote",r.lote)}
+      ${f("Marca",r.marca)}${f("Num. Saco",r.numSaco)}
+    </div></div>
+    <div class="det-sec"><div class="det-title">🔄 Devolución</div><div class="det-grid">
+      ${f("Fecha",r.fechaDev)}${f("Sacos",r.devSacos)}
+      ${f("KG",r.devKg?r.devKg+" kg":"")}${f("Num. Saco",r.devNumSaco)}
+    </div></div>
+    ${r.observacion?`<div class="det-sec"><div class="det-title">📝 Observaciones</div><div style="font-size:13px">${r.observacion}</div></div>`:""}
+    <div style="margin-top:12px"><button class="btn btn-info" style="width:100%" onclick="pdfRegistro('${r.id}')">📄 Generar PDF</button></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">Ingresado por: ${r.ingresadoPor||"—"}</div>`;
+  g("modal").style.display="flex";
+};
+window.closeModal=()=>g("modal").style.display="none";
+
+// ─── PDF (igual a FOR-BOD-05) ───
+window.pdfRegistro=function(id){
+  const r=typeof id==="string"?allReg.find(x=>x.id===id):id;
+  if(!r) return;
+  generarPDF(r);
+};
+
+function limpiar(str){
+  if(!str && str!==0) return "-";
+  return String(str)
+    .replace(/[áàä]/g,"a").replace(/[ÁÀÄ]/g,"A")
+    .replace(/[éèë]/g,"e").replace(/[ÉÈË]/g,"E")
+    .replace(/[íìï]/g,"i").replace(/[ÍÌÏ]/g,"I")
+    .replace(/[óòö]/g,"o").replace(/[ÓÒÖ]/g,"O")
+    .replace(/[úùü]/g,"u").replace(/[ÚÙÜ]/g,"U")
+    .replace(/ñ/g,"n").replace(/Ñ/g,"N")
+    .replace(/[^\x20-\x7E]/g,"");
+}
+
+function generarPDF(r){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  const W=210, M=15, CW=W-M*2;
+
+  // Colores — solo RGB, sin caracteres especiales
+  const AZUL_OSC  = [13,  32,  53 ];
+  const AZUL_MED  = [29,  111, 168];
+  const AZUL_ACA  = [6,   174, 212];
+  const GRIS_FILA = [246, 248, 251];
+  const GRIS_LBL  = [120, 140, 160];
+  const NEGRO     = [30,  30,  30 ];
+  const BLANCO    = [255, 255, 255];
+  const BORDE_C   = [200, 215, 228];
+
+  let y = 0;
+
+  // ===================== ENCABEZADO =====================
+  // Fondo azul oscuro
+  doc.setFillColor(...AZUL_OSC);
+  doc.rect(0, 0, W, 38, "F");
+
+  // Franja lateral izquierda decorativa
+  doc.setFillColor(...AZUL_MED);
+  doc.rect(0, 0, 6, 38, "F");
+
+  // Linea inferior del header
+  doc.setFillColor(...AZUL_ACA);
+  doc.rect(0, 38, W, 1.2, "F");
+
+  // Titulo
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...BLANCO);
+  doc.text("ORDEN DE DESPACHO DE METABISULFITO DE SODIO", 12, 13);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(180, 210, 230);
+  doc.text("Bodega Sta. Rosa  |  Control de Insumos", 12, 20);
+
+  doc.setFontSize(7);
+  doc.setTextColor(150, 185, 210);
+  const fechaReg = new Date(r.createdAt||Date.now());
+  const fechaStr = fechaReg.getDate()+"/"+(fechaReg.getMonth()+1)+"/"+fechaReg.getFullYear()+" "+fechaReg.getHours()+":"+String(fechaReg.getMinutes()).padStart(2,"0");
+  doc.text("Ingresado por: "+limpiar(r.ingresadoPor)+"   |   Fecha registro: "+fechaStr, 12, 27);
+
+  // Bloque derecho — codigo y numeracion
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...AZUL_ACA);
+  doc.text("BODEGA",          W-M, 8,  {align:"right"});
+  doc.text("CODIGO: FOR-BOD-05", W-M, 14, {align:"right"});
+  doc.text("VERSION: 00",     W-M, 19, {align:"right"});
+  doc.text("EMISION: 10/02/2026", W-M, 24, {align:"right"});
+
+  doc.setFontSize(10);
+  doc.setTextColor(...BLANCO);
+  doc.text("No. "+limpiar(r.numeracion), W-M, 33, {align:"right"});
+
+  y = 44;
+
+  // ===================== FUNCIONES INTERNAS =====================
+  function seccion(titulo){
+    // Fondo de la cabecera de seccion
+    doc.setFillColor(...AZUL_MED);
+    doc.rect(M, y, CW, 6.5, "F");
+    // Borde izquierdo acento
+    doc.setFillColor(...AZUL_ACA);
+    doc.rect(M, y, 3, 6.5, "F");
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...BLANCO);
+    doc.text(titulo, M+6, y+4.5);
+    y += 8;
+  }
+
+  let filaAlterna = false;
+  function fila2(l1, v1, l2, v2){
+    const col = filaAlterna ? [240,244,248] : GRIS_FILA;
+    filaAlterna = !filaAlterna;
+    doc.setFillColor(...col);
+    doc.rect(M, y, CW, 8.5, "F");
+    doc.setDrawColor(...BORDE_C);
+    doc.setLineWidth(0.2);
+    doc.rect(M, y, CW, 8.5, "S");
+    // Linea divisoria central
+    doc.setDrawColor(...BORDE_C);
+    doc.line(M+CW/2, y, M+CW/2, y+8.5);
+
+    const col1x = M+3;
+    const col2x = M+CW/2+3;
+
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(6);
+    doc.setTextColor(...GRIS_LBL);
+    doc.text(l1, col1x, y+3);
+
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...NEGRO);
+    doc.text(limpiar(v1), col1x, y+7.5);
+
+    if(l2){
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(6);
+      doc.setTextColor(...GRIS_LBL);
+      doc.text(l2, col2x, y+3);
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(8);
+      doc.setTextColor(...NEGRO);
+      doc.text(limpiar(v2), col2x, y+7.5);
+    }
+    y += 9;
+  }
+
+  function fila1(l, val){
+    const col = filaAlterna ? [240,244,248] : GRIS_FILA;
+    filaAlterna = !filaAlterna;
+    doc.setFillColor(...col);
+    doc.rect(M, y, CW, 8.5, "F");
+    doc.setDrawColor(...BORDE_C);
+    doc.setLineWidth(0.2);
+    doc.rect(M, y, CW, 8.5, "S");
+
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(6);
+    doc.setTextColor(...GRIS_LBL);
+    doc.text(l, M+3, y+3);
+
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...NEGRO);
+    doc.text(limpiar(val), M+3, y+7.5);
+    y += 9;
+  }
+
+  function espacio(n){ y += n||4; }
+
+  // ===================== SECCIONES =====================
+
+  // --- TRANSPORTISTA ---
+  filaAlterna = false;
+  seccion("INFORMACION DEL TRANSPORTISTA");
+  fila2("PLACA DEL VEHICULO",       r.placa,       "NOMBRE DEL CONDUCTOR",    r.conductor);
+  fila2("FECHA INICIO TRANSPORTE",  r.fechaInicio, "HORA DE SALIDA",          r.horaSalida);
+  fila2("PUNTO DE PARTIDA",         r.puntoPartida,"FECHA FIN TRANSPORTE",    r.fechaFin);
+  fila2("HORA DE LLEGADA",          r.horaLlegada, "PUNTO DE LLEGADA",        r.puntoLlegada);
+  fila2("RUTA DEL TRANSPORTE",      r.ruta,        "GUIA MDI",                r.guiaMdi);
+  fila2("LUGAR DE PESCA / PRODUCTOR",r.lugarPesca, "NRO. GUIA REMISION/PESCA",r.nroGuia);
+  fila1("CODIGO RECIBIDOR",         r.codRecibidor);
+  espacio(4);
+
+  // --- DESPACHO ---
+  filaAlterna = false;
+  seccion("DESPACHO DE METABISULFITO DE SODIO PARA LA PESCA");
+  fila2("FECHA DEL DESPACHO",  r.fechaDespacho,  "SOLICITADO POR",     r.solicitadoPor);
+  fila2("DESPACHADO POR",      r.despachador,    "","");
+  fila2("CANTIDAD DE SACOS",   r.cantSacos||0,   "CANTIDAD EN KG",     (r.cantKg||0)+" kg");
+  fila2("LOTE DEL SACO",       r.lote,           "MARCA DEL SACO",     r.marca);
+  fila1("NUMERACION DEL SACO", r.numSaco);
+  espacio(4);
+
+  // --- DEVOLUCION ---
+  filaAlterna = false;
+  seccion("DEVOLUCION DE METABISULFITO DE SODIO DESDE LA PESCA");
+  fila2("FECHA DE LA DEVOLUCION",       r.fechaDev,          "DEVOLUCION CANTIDAD EN SACOS", r.devSacos||0);
+  fila2("DEVOLUCION CANTIDAD EN KG",    (r.devKg||0)+" kg",  "DEVOLUCION NUMERACION SACO",   r.devNumSaco);
+  espacio(4);
+
+  // --- KG UTILIZADOS ---
+  const kgUsado = (parseFloat(r.cantKg)||0) - (parseFloat(r.devKg)||0);
+  doc.setFillColor(...AZUL_OSC);
+  doc.rect(M, y, CW, 11, "F");
+  doc.setFillColor(...AZUL_ACA);
+  doc.rect(M, y, 3, 11, "F");
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(7);
+  doc.setTextColor(180, 210, 230);
+  doc.text("KG EFECTIVAMENTE UTILIZADOS:", M+6, y+4.5);
+  doc.setFontSize(11);
+  doc.setTextColor(...BLANCO);
+  doc.text(kgUsado.toFixed(2)+" KG", M+6, y+9.5);
+  espacio(15);
+
+  // --- OBSERVACIONES ---
+  if(r.observacion){
+    filaAlterna = false;
+    seccion("OBSERVACIONES");
+    doc.setFillColor(...GRIS_FILA);
+    doc.rect(M, y, CW, 14, "F");
+    doc.setDrawColor(...BORDE_C);
+    doc.setLineWidth(0.2);
+    doc.rect(M, y, CW, 14, "S");
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...NEGRO);
+    const lines = doc.splitTextToSize(limpiar(r.observacion), CW-6);
+    doc.text(lines, M+3, y+5);
+    espacio(18);
+  }
+
+  // --- FIRMAS ---
+  espacio(6);
+  doc.setDrawColor(...BORDE_C);
+  doc.setLineWidth(0.4);
+  const fw = 52;
+  const totalFirmas = fw*3;
+  const gap = (CW - totalFirmas) / 2;
+  const firmas = [
+    ["ENCARGADO DE DESPACHO", limpiar(r.despachador)],
+    ["TRANSPORTISTA",         limpiar(r.conductor)],
+    ["RECIBIDO POR",          limpiar(r.solicitadoPor)]
+  ];
+  firmas.forEach(([titulo, nombre], i) => {
+    const x = M + i*(fw+gap);
+    doc.line(x, y+10, x+fw, y+10);
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...GRIS_LBL);
+    doc.text(titulo, x+fw/2, y+14, {align:"center"});
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...NEGRO);
+    doc.text(nombre, x+fw/2, y+19, {align:"center"});
+  });
+
+  // --- FOOTER ---
+  doc.setFillColor(...AZUL_OSC);
+  doc.rect(0, 284, W, 13, "F");
+  doc.setFillColor(...AZUL_ACA);
+  doc.rect(0, 284, W, 1, "F");
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(6.5);
+  doc.setTextColor(150, 185, 210);
+  const ahora = new Date();
+  const ahoraStr = ahora.getDate()+"/"+(ahora.getMonth()+1)+"/"+ahora.getFullYear()+" "+ahora.getHours()+":"+String(ahora.getMinutes()).padStart(2,"0");
+  doc.text("FOR-BOD-05  |  Generado: "+ahoraStr+"  |  Control Metabisulfito de Sodio - Bodega Sta. Rosa", W/2, 291, {align:"center"});
+  doc.setFont("helvetica","bold");
+  doc.setTextColor(180, 210, 230);
+  doc.text("No. "+limpiar(r.numeracion), W/2, 294, {align:"center"});
+
+  doc.save("Despacho_"+limpiar(r.numeracion)+"_"+(r.fechaDespacho||"sin-fecha")+".pdf");
+}
+
+// ─── USUARIOS ───
+window.crearUsuario=async function(){
+  const nombre=v("u-nombre"),email=v("u-email"),pass=v("u-pass"),rol=g("u-rol").value;
+  if(!nombre||!email||!pass){showAlert("Completa todos los campos.","error");return;}
+  if(pass.length<6){showAlert("Contraseña mínimo 6 caracteres.","error");return;}
+  const btn=g("btn-crear"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
+  try{
+    const cred=await createUserWithEmailAndPassword(auth,email,pass);
+    await setDoc(doc(db,CUSR,cred.user.uid),{nombre,email,rol,activo:true,creadoPor:curNombre,creadoEn:new Date().toISOString()});
+    ["u-nombre","u-email","u-pass"].forEach(id=>g(id).value=""); g("u-rol").value="operario";
+    showAlert("✅ Usuario "+nombre+" creado como "+rol+".","success");
+    cargarUsuarios();
+  }catch(e){
+    let m=e.message;
+    if(e.code==="auth/email-already-in-use") m="Ese correo ya está registrado.";
+    showAlert("Error: "+m,"error");
+  }
+  btn.disabled=false; btn.textContent="➕ CREAR USUARIO";
+};
+
+async function cargarUsuarios(){
+  const wrap=g("lista-usuarios");
+  try{
+    const snap=await getDocs(collection(db,CUSR));
+    const users=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!users.length){wrap.innerHTML='<div class="empty">Sin usuarios</div>';return;}
+    wrap.innerHTML=users.map(u=>`
+      <div class="user-row">
+        <div class="u-avatar ${u.rol==="admin"?"ua-admin":"ua-op"}">${(u.nombre||"?")[0].toUpperCase()}</div>
+        <div class="u-info">
+          <div class="u-name">${u.nombre||"Sin nombre"}</div>
+          <div class="u-email">${u.email}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span class="badge ${u.rol==="admin"?"b-yellow":"b-blue"}">${u.rol}</span>
+          <span class="badge ${u.activo!==false?"b-green":"b-red"}">${u.activo!==false?"activo":"inactivo"}</span>
+        </div>
+        <div class="u-actions">
+          ${u.activo!==false
+            ?`<button class="btn btn-sm btn-warn" onclick="toggleUser('${u.id}',false)">Desact.</button>`
+            :`<button class="btn btn-sm btn-success" onclick="toggleUser('${u.id}',true)">Activar</button>`}
+          ${u.rol==="operario"
+            ?`<button class="btn btn-sm btn-ghost" onclick="changeRole('${u.id}','admin')">→ Admin</button>`
+            :`<button class="btn btn-sm btn-ghost" onclick="changeRole('${u.id}','operario')">→ Op.</button>`}
+        </div>
+      </div>`).join("");
+  }catch(e){wrap.innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
+}
+window.toggleUser=async(uid,s)=>{await updateDoc(doc(db,CUSR,uid),{activo:s});showAlert(s?"Usuario activado.":"Usuario desactivado.","info");cargarUsuarios();};
+window.changeRole=async(uid,r)=>{if(!confirm("¿Cambiar rol a "+r+"?"))return;await updateDoc(doc(db,CUSR,uid),{rol:r});showAlert("Rol actualizado.","info");cargarUsuarios();};
+
+// ─── SWITCH TAB ───
+
+
+// ─── AUTO PLACA desde conductor ───
+window.autoPlaca = function(val){
+  const sel = document.getElementById("f-conductor");
+  const opt = sel ? sel.querySelector('option[value="'+val+'"]') : null;
+  const placa = opt ? (opt.getAttribute("data-placa") || "") : "";
+  const placaInput = document.getElementById("f-placa");
+  const manualWrap = document.getElementById("f-conductor-manual-wrap");
+  if(!placaInput) return;
+  if(val === "OTRO"){
+    placaInput.removeAttribute("readonly");
+    placaInput.style.background = "var(--bg)";
+    placaInput.style.color = "var(--text)";
+    placaInput.style.fontWeight = "normal";
+    placaInput.style.letterSpacing = "normal";
+    placaInput.value = "";
+    placaInput.placeholder = "Ingresa la placa manualmente";
+    if(manualWrap) manualWrap.style.display = "flex";
+  } else {
+    placaInput.setAttribute("readonly","true");
+    placaInput.style.background = "#070e1a";
+    placaInput.style.color = "var(--cyan)";
+    placaInput.style.fontWeight = "700";
+    placaInput.style.letterSpacing = "2px";
+    placaInput.value = placa;
+    if(manualWrap) manualWrap.style.display = "none";
+  }
+};
+
+// ─── KARDEX ───
+// Estructura igual al Excel FOR-BOD-05:
+// Cada despacho genera 1 fila de EGRESO (cantKg despachado)
+// Cada devolucion genera 1 fila de INGRESO (devKg devuelto)
+// El saldo corre en tiempo real: saldo = saldo_anterior + ingresos - egresos
+// Los sitios del Excel se mapean a los valores de lugarPesca/puntoLlegada ingresados
+
+const SITIO_LABELS = {
+  "todos":                          "Todos los sitios - Consolidado",
+  "Icemart-Logistica":              "Icemart - Logistica",
+  "Mare Sta. Rosa":                 "Mare Sta. Rosa",
+  "Mare El Cambio":                 "Mare El Cambio",
+  "Icemart-Mare":                   "Icemart - Mare",
+};
+
+window.cargarKardex = async function(){
+  const sitioKey = (document.getElementById("k-sitio")?.value || "todos").trim();
+  const desde    = document.getElementById("k-desde")?.value || "";
+  const hasta    = document.getElementById("k-hasta")?.value || "";
+  const wrap     = document.getElementById("tabla-kardex");
+  if(!wrap) return;
+
+  wrap.innerHTML = '<div class="empty"><span class="spinner"></span> Calculando kardex...</div>';
+
+  try {
+    // Traer todos los despachos ordenados por fecha
+    const q = query(collection(db, CDESP), orderBy("fechaDespacho","asc"), orderBy("createdAt","asc"));
+    const snap = await getDocs(q);
+    const todos = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+
+    // Filtrar por sitio
+    let movsBase = todos;
+    if(sitioKey !== "todos"){
+      movsBase = todos.filter(r => {
+        const lugar = (r.lugarPesca||"").toLowerCase();
+        const destino = (r.puntoLlegada||"").toLowerCase();
+        const combinado = lugar + " " + destino;
+        // Normalizar key para busqueda flexible
+        const palabras = sitioKey.toLowerCase()
+          .replace("icemart","").replace("logistica","logist")
+          .replace("sta. rosa","sta rosa").replace("el cambio","cambio")
+          .split(" ").filter(p=>p.length>2);
+        return palabras.some(p => combinado.includes(p));
+      });
+      // Si no matchea nada, mostrar todos (para sitios sin lugar pesca definido)
+      if(movsBase.length === 0) movsBase = todos;
+    }
+
+    // Filtrar por fecha
+    if(desde) movsBase = movsBase.filter(r => (r.fechaDespacho||"") >= desde);
+    if(hasta) movsBase = movsBase.filter(r => (r.fechaDespacho||"") <= hasta);
+
+    // ── Construir filas del kardex ──
+    // Cada despacho genera SIEMPRE una fila de egreso.
+    // Si tiene devolucion > 0, genera ADEMAS una fila de ingreso.
+    // Esto replica exactamente la logica del Excel.
+    const filas = [];
+    movsBase.forEach(r => {
+      const kg   = parseFloat(r.cantKg)  || 0;
+      const devkg= parseFloat(r.devKg)   || 0;
+      // Fila EGRESO (despacho)
+      if(kg > 0){
+        filas.push({
+          tipo:       "EGRESO",
+          fecha:      r.fechaDespacho || "-",
+          kg:         kg,
+          marca:      r.marca  || "-",
+          lote:       r.lote   || "-",
+          numSaco:    r.numSaco|| "-",
+          docRef:     r.numeracion || "-",
+          docEgreso:  r.nroGuia || r.guiaMdi || "-",
+          placa:      r.placa  || "-",
+          destino:    r.lugarPesca || r.puntoLlegada || "-",
+          conductor:  r.conductor  || "-",
+          solicitado: r.solicitadoPor || "-",
+          _raw: r,
+        });
+      }
+      // Fila INGRESO (devolucion desde pesca)
+      if(devkg > 0){
+        filas.push({
+          tipo:       "INGRESO",
+          fecha:      r.fechaDev || r.fechaDespacho || "-",
+          kg:         devkg,
+          marca:      r.marca    || "-",
+          lote:       r.lote     || "-",
+          numSaco:    r.devNumSaco || "-",
+          docRef:     "DEV-" + (r.numeracion||"-"),
+          docEgreso:  "-",
+          placa:      r.placa    || "-",
+          destino:    r.lugarPesca || "-",
+          conductor:  r.conductor  || "-",
+          solicitado: r.solicitadoPor || "-",
+          _raw: r,
+        });
+      }
+    });
+
+    // ── Calcular saldo corriente ──
+    let saldo = 0;
+    let totalIng = 0, totalEgr = 0;
+    const filasConSaldo = filas.map((f, i) => {
+      const saldoIni = saldo;
+      if(f.tipo === "INGRESO"){
+        saldo += f.kg;
+        totalIng += f.kg;
+      } else {
+        saldo -= f.kg;
+        totalEgr += f.kg;
+      }
+      return { ...f, saldoInicial: saldoIni, saldoFinal: saldo };
+    });
+
+    // ── Stats ──
+    const statsEl = document.getElementById("k-stats");
+    if(statsEl) statsEl.style.display = "grid";
+    const set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+    set("k-total-ing", totalIng.toFixed(1)+" kg");
+    set("k-total-egr", totalEgr.toFixed(1)+" kg");
+    set("k-saldo-act", saldo.toFixed(1)+" kg");
+    set("k-movs", filasConSaldo.length);
+
+    if(!filasConSaldo.length){
+      wrap.innerHTML = '<div class="empty">Sin movimientos para este sitio. Ingresa despachos primero.</div>';
+      return;
+    }
+
+    // ── Render tabla ──
+    const colorIng = "var(--green)";
+    const colorEgr = "var(--orange)";
+
+    wrap.innerHTML = `<div class="tbl-wrap"><table style="min-width:900px">
+      <thead>
+        <tr style="background:var(--bg)">
+          <th colspan="7" style="background:#052e1a;color:var(--green);text-align:center;padding:6px">INGRESOS (Devoluciones de pesca / Transferencias)</th>
+          <th colspan="6" style="background:#2d1a00;color:var(--orange);text-align:center;padding:6px">EGRESOS (Despachos)</th>
+          <th colspan="3" style="background:var(--bg);text-align:center;padding:6px">SALDO / REFERENCIA</th>
+        </tr>
+        <tr>
+          <th>No.</th>
+          <th>Fecha</th>
+          <th>Saldo Inicial</th>
+          <th>Doc. Ingreso</th>
+          <th>KG Ingreso</th>
+          <th>Marca Ing.</th>
+          <th>Lote / Num. Saco</th>
+          <th>Doc. Egreso</th>
+          <th>KG Egreso</th>
+          <th>Marca Egr.</th>
+          <th>Lote / Num. Saco</th>
+          <th>Destino</th>
+          <th>Placa</th>
+          <th style="background:#0a1f35;color:var(--cyan)">Saldo Final</th>
+          <th>Nro Guia</th>
+          <th>Conductor</th>
+        </tr>
+      </thead>
+      <tbody>${filasConSaldo.map((f,i) => {
+        const esIng = f.tipo === "INGRESO";
+        const rowBg = esIng ? "background:#052e1a1a" : "background:#2d1a001a";
+        return `<tr style="${rowBg}">
+          <td><span class="badge ${esIng?"b-green":"b-orange"}">${String(i+1).padStart(2,"0")}</span></td>
+          <td style="white-space:nowrap;font-size:12px">${f.fecha}</td>
+          <td style="text-align:right;font-family:monospace;color:var(--muted);font-size:12px">${f.saldoInicial.toFixed(0)} kg</td>
+          ${esIng ? `
+            <td style="font-size:11px;color:var(--green)">${f.docRef}</td>
+            <td style="text-align:right;font-family:monospace;font-weight:700;color:var(--green)">${f.kg.toFixed(1)} kg</td>
+            <td style="font-size:11px">${f.marca}</td>
+            <td style="font-size:11px">${f.lote} / ${f.numSaco}</td>
+            <td colspan="5" style="color:var(--muted);font-size:11px;text-align:center">—</td>
+          ` : `
+            <td colspan="4" style="color:var(--muted);font-size:11px;text-align:center">—</td>
+            <td style="font-size:11px;color:var(--orange)">${f.docEgreso}</td>
+            <td style="text-align:right;font-family:monospace;font-weight:700;color:var(--orange)">${f.kg.toFixed(1)} kg</td>
+            <td style="font-size:11px">${f.marca}</td>
+            <td style="font-size:11px">${f.lote} / ${f.numSaco}</td>
+            <td style="font-size:12px">${f.destino}</td>
+            <td style="font-size:11px;color:var(--cyan);font-family:monospace">${f.placa}</td>
+          `}
+          <td style="text-align:right;font-family:monospace;font-weight:800;font-size:13px;${f.saldoFinal>=0?"color:var(--cyan)":"color:var(--red);background:#2d0a0a"}">${f.saldoFinal.toFixed(0)} kg</td>
+          <td style="font-size:11px">${f._raw.guiaMdi||f._raw.nroGuia||"-"}</td>
+          <td style="font-size:11px">${f.conductor}</td>
+        </tr>`;
+      }).join("")}
+      </tbody>
+      <tfoot>
+        <tr style="border-top:2px solid var(--border2)">
+          <td colspan="3" style="color:var(--muted);font-weight:700;font-size:11px">TOTALES DEL PERIODO</td>
+          <td></td>
+          <td style="text-align:right;color:var(--green);font-weight:800;font-family:monospace">${totalIng.toFixed(1)} kg</td>
+          <td colspan="3"></td>
+          <td style="text-align:right;color:var(--orange);font-weight:800;font-family:monospace">${totalEgr.toFixed(1)} kg</td>
+          <td colspan="4"></td>
+          <td style="text-align:right;color:var(--cyan);font-weight:800;font-family:monospace">${saldo.toFixed(1)} kg</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table></div>`;
+
+  } catch(e){
+    wrap.innerHTML = '<div class="empty">Error al cargar: '+limpiar(e.message)+'</div>';
+    console.error(e);
+  }
+};
+
+window.switchTab=function(i){
+  [0,1,2,3,4,5].forEach(j=>{
     const t=g("tab-"+j); if(t) t.style.display=j===i?"block":"none";
     const n=g("nav-"+j); if(n) n.classList.toggle("active",j===i);
   });
@@ -1026,7 +2765,7 @@ function g(id){return document.getElementById(id);}
 function show(id,d="block"){g(id).style.display=d;}
 function hide(id){g(id).style.display="none";}
 function limpiarForm(){
-  ["f-placa","f-conductor","f-fechaInicio","f-horaSalida","f-puntoPartida","f-fechaFin",
+  ["f-placa","f-conductor","f-conductor-manual","f-fechaInicio","f-horaSalida","f-puntoPartida","f-fechaFin",
    "f-horaLlegada","f-puntoLlegada","f-ruta","f-guiaMdi","f-lugarPesca","f-nroGuia",
    "f-codRecibidor","f-fechaDespacho","f-solicitadoPor","f-despachador","f-cantSacos",
    "f-cantKg","f-lote","f-marca","f-numSaco","f-fechaDev","f-devSacos","f-devKg",
