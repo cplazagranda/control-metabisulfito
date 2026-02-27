@@ -351,8 +351,8 @@
           <div class="field"><label>Fecha del Despacho ★</label><input id="f-fechaDespacho" type="date"/></div>
           <div class="field"><label>Solicitado Por</label><input id="f-solicitadoPor" type="text"/></div>
           <div class="field"><label>Despachado Por</label><input id="f-despachador" type="text"/></div>
-          <div class="field"><label>Cantidad Sacos</label><input id="f-cantSacos" type="number" min="0" placeholder="0" inputmode="decimal"/></div>
-          <div class="field"><label>Cantidad en KG</label><input id="f-cantKg" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal"/></div>
+          <div class="field"><label>Cantidad Sacos</label><input id="f-cantSacos" type="number" min="0" placeholder="0" inputmode="decimal" oninput="document.getElementById('f-cantKg').value=(parseFloat(this.value)||0)*25"/></div>
+          <div class="field"><label>Cantidad en KG <span style="color:var(--cyan);font-size:11px">(auto: sacos × 25)</span></label><input id="f-cantKg" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal" style="background:#0a1520;color:var(--cyan);font-weight:700" title="Se calcula automáticamente: sacos × 25 kg"/></div>
           <div class="field"><label>Lote del Saco</label><input id="f-lote" type="text"/></div>
           <div class="field"><label>Marca del Saco</label><input id="f-marca" type="text"/></div>
           <div class="field"><label>Numeración del Saco</label><input id="f-numSaco" type="text"/></div>
@@ -363,8 +363,8 @@
         <div class="card-title">🔄 Devolución</div>
         <div class="fgrid">
           <div class="field"><label>Fecha Devolución</label><input id="f-fechaDev" type="date"/></div>
-          <div class="field"><label>Sacos Devueltos</label><input id="f-devSacos" type="number" min="0" placeholder="0" inputmode="decimal"/></div>
-          <div class="field"><label>KG Devueltos</label><input id="f-devKg" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal"/></div>
+          <div class="field"><label>Sacos Devueltos</label><input id="f-devSacos" type="number" min="0" placeholder="0" inputmode="decimal" oninput="document.getElementById('f-devKg').value=(parseFloat(this.value)||0)*25"/></div>
+          <div class="field"><label>KG Devueltos <span style="color:var(--cyan);font-size:11px">(auto: sacos × 25)</span></label><input id="f-devKg" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal" style="background:#0a1520;color:var(--cyan);font-weight:700" title="Se calcula automáticamente: sacos × 25 kg"/></div>
           <div class="field"><label>Numeración Saco Dev.</label><input id="f-devNumSaco" type="text"/></div>
         </div>
       </div>
@@ -604,8 +604,8 @@
         <div class="field"><label>Fecha Despacho ★</label><input id="e-fechaDespacho" type="date"/></div>
         <div class="field"><label>Solicitado Por</label><input id="e-solicitadoPor" type="text"/></div>
         <div class="field"><label>Despachado Por</label><input id="e-despachador" type="text"/></div>
-        <div class="field"><label>Cant. Sacos</label><input id="e-cantSacos" type="number" min="0"/></div>
-        <div class="field"><label>Cant. KG</label><input id="e-cantKg" type="number" min="0" step="0.01"/></div>
+        <div class="field"><label>Cant. Sacos</label><input id="e-cantSacos" type="number" min="0" oninput="document.getElementById('e-cantKg').value=(parseFloat(this.value)||0)*25"/></div>
+        <div class="field"><label>Cant. KG <span style="color:var(--cyan);font-size:11px">auto</span></label><input id="e-cantKg" type="number" min="0" step="0.01" style="color:var(--cyan);font-weight:700"/></div>
         <div class="field"><label>Lote</label><input id="e-lote" type="text"/></div>
         <div class="field"><label>Marca</label><input id="e-marca" type="text"/></div>
         <div class="field"><label>Num. Saco</label><input id="e-numSaco" type="text"/></div>
@@ -614,8 +614,8 @@
       <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin:14px 0 10px;display:flex;align-items:center;gap:8px">🔄 Devolución</div>
       <div class="fgrid">
         <div class="field"><label>Fecha Dev.</label><input id="e-fechaDev" type="date"/></div>
-        <div class="field"><label>Sacos Dev.</label><input id="e-devSacos" type="number" min="0"/></div>
-        <div class="field"><label>KG Dev.</label><input id="e-devKg" type="number" min="0" step="0.01"/></div>
+        <div class="field"><label>Sacos Dev.</label><input id="e-devSacos" type="number" min="0" oninput="document.getElementById('e-devKg').value=(parseFloat(this.value)||0)*25"/></div>
+        <div class="field"><label>KG Dev. <span style="color:var(--cyan);font-size:11px">auto</span></label><input id="e-devKg" type="number" min="0" step="0.01" style="color:var(--cyan);font-weight:700"/></div>
         <div class="field"><label>Num. Saco Dev.</label><input id="e-devNumSaco" type="text"/></div>
       </div>
       <!-- Observaciones -->
