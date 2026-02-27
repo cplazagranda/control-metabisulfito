@@ -1,301 +1,347 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Control de Metabisulfito de Sodio — Bodega Sta. Rosa</title>
+  <title>Control Metabisulfito — Bodega Sta. Rosa</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap');
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0d1117;
-      --surface: #161b22;
-      --border: #21262d;
-      --border2: #30363d;
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --blue: #38bdf8;
-      --blue-dark: #0c2940;
-      --blue-border: #1e4976;
-      --green: #a3e635;
-      --orange: #fb923c;
-      --pink: #f472b6;
-      --red: #f87171;
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#21262d;--border2:#30363d;
+      --text:#e6edf3;--muted:#8b949e;--blue:#38bdf8;--blue-dark:#0c2940;--blue-border:#1e4976;
+      --green:#a3e635;--orange:#fb923c;--pink:#f472b6;--red:#f87171;--yellow:#fbbf24;
     }
+    body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh}
 
-    body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
+    /* ---- LOADING ---- */
+    #loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:var(--blue)}
+    .loading-logo{font-size:52px;animation:pulse 1.5s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner{display:inline-block;width:14px;height:14px;border:2px solid #ffffff44;border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
 
-    /* HEADER */
-    .header {
-      background: linear-gradient(135deg, #1a3a5c 0%, #0d2035 100%);
-      padding: 20px 32px;
-      border-bottom: 2px solid var(--blue-border);
-      display: flex; align-items: center; gap: 16px;
-    }
-    .logo { width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6, #0ea5e9); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
-    .header-title { flex: 1; }
-    .header-title h1 { font-family: 'Syne', sans-serif; font-size: 18px; color: #e0f2fe; letter-spacing: 1px; }
-    .header-title p { font-size: 10px; color: #7dd3fc; letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
-    .header-stat { text-align: right; font-size: 11px; color: #7dd3fc; }
-    .header-stat span { display: block; font-size: 24px; font-weight: 700; color: #e0f2fe; font-family: 'Syne', sans-serif; }
+    /* ---- LOGIN ---- */
+    #login-screen{min-height:100vh;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 40%,#0d2035 0%,#0d1117 70%)}
+    .login-box{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 24px 64px #00000080}
+    .login-logo{text-align:center;margin-bottom:24px}
+    .login-logo .icon{font-size:44px;display:block;margin-bottom:8px}
+    .login-logo h1{font-family:'Syne',sans-serif;font-size:18px;color:#e0f2fe;letter-spacing:1px}
+    .login-logo p{font-size:10px;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+    .login-field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+    .login-field label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+    .login-field input{background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-size:14px;font-family:'DM Mono',monospace;outline:none;transition:border-color .2s}
+    .login-field input:focus{border-color:var(--blue)}
+    .btn-login{width:100%;background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:white;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:1px;margin-top:4px;transition:opacity .2s}
+    .btn-login:hover{opacity:.9}
+    .btn-login:disabled{opacity:.5;cursor:not-allowed}
+    .login-error{background:#2d0a0a;border:1px solid #991b1b;color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:16px;display:none}
 
-    /* TABS */
-    .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; overflow-x: auto; }
-    .tab-btn { padding: 14px 20px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'DM Mono', monospace; letter-spacing: 0.5px; color: var(--muted); border: none; border-bottom: 2px solid transparent; background: none; white-space: nowrap; transition: all 0.2s; }
-    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+    /* ---- HEADER ---- */
+    .header{background:linear-gradient(135deg,#1a3a5c 0%,#0d2035 100%);padding:16px 28px;border-bottom:2px solid var(--blue-border);display:flex;align-items:center;gap:14px}
+    .logo{width:44px;height:44px;background:linear-gradient(135deg,#3b82f6,#0ea5e9);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .header-title{flex:1}
+    .header-title h1{font-family:'Syne',sans-serif;font-size:16px;color:#e0f2fe;letter-spacing:1px}
+    .header-title p{font-size:10px;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+    .header-right{display:flex;align-items:center;gap:12px}
+    .user-badge{background:var(--blue-dark);border:1px solid var(--blue-border);border-radius:8px;padding:6px 12px;font-size:11px;color:var(--blue)}
+    .role-badge{border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700}
+    .role-admin{background:#fbbf2422;color:var(--yellow);border:1px solid #fbbf2455}
+    .role-operario{background:#38bdf822;color:var(--blue);border:1px solid #38bdf855}
+    .btn-logout{background:#1a1f28;border:1px solid var(--border2);color:var(--muted);border-radius:6px;padding:6px 12px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer}
+    .btn-logout:hover{color:var(--red);border-color:#991b1b}
 
-    /* BODY */
-    .body { padding: 24px 28px; max-width: 1100px; margin: 0 auto; }
+    /* ---- TABS ---- */
+    .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;overflow-x:auto}
+    .tab-btn{padding:13px 18px;cursor:pointer;font-size:12px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:.5px;color:var(--muted);border:none;border-bottom:2px solid transparent;background:none;white-space:nowrap;transition:all .2s}
+    .tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
 
-    /* SECTION */
-    .section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; margin-bottom: 18px; }
-    .section-title { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--blue); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    /* ---- BODY ---- */
+    .body{padding:22px 26px;max-width:1100px;margin:0 auto}
 
-    /* GRID */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
-    .field { display: flex; flex-direction: column; gap: 5px; }
-    .field label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
-    .field input, .field select, .field textarea {
-      background: var(--bg); border: 1px solid var(--border2); border-radius: 6px;
-      padding: 8px 10px; color: var(--text); font-size: 13px; font-family: 'DM Mono', monospace;
-      outline: none; transition: border-color 0.2s;
-    }
-    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--blue); }
-    .field textarea { resize: vertical; min-height: 64px; }
+    /* ---- SECTION ---- */
+    .section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+    .section-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:14px}
 
-    /* BUTTONS */
-    .btn-primary { background: linear-gradient(135deg, #1d4ed8, #0ea5e9); color: white; border: none; border-radius: 8px; padding: 12px 28px; font-size: 13px; font-weight: 700; font-family: 'DM Mono', monospace; cursor: pointer; letter-spacing: 1px; transition: opacity 0.2s; }
-    .btn-primary:hover { opacity: 0.9; }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-danger { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-family: 'DM Mono', monospace; cursor: pointer; }
-    .btn-info { background: var(--blue-dark); color: var(--blue); border: 1px solid var(--blue-border); border-radius: 6px; padding: 4px 10px; font-size: 11px; font-family: 'DM Mono', monospace; cursor: pointer; }
-    .btn-secondary { background: #1a2535; color: var(--muted); border: 1px solid var(--border2); border-radius: 6px; padding: 8px 16px; font-size: 12px; font-family: 'DM Mono', monospace; cursor: pointer; }
+    /* ---- GRID / FIELDS ---- */
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:13px}
+    .field{display:flex;flex-direction:column;gap:5px}
+    .field label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+    .field input,.field select,.field textarea{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:'DM Mono',monospace;outline:none;transition:border-color .2s}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue)}
+    .field textarea{resize:vertical;min-height:60px}
+    .field select option{background:var(--bg)}
 
-    /* ALERTS */
-    .alert { border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; font-size: 13px; }
-    .alert-success { background: #052e16; border: 1px solid #16a34a; color: #86efac; }
-    .alert-error { background: #2d0a0a; border: 1px solid #991b1b; color: #fca5a5; }
-    .alert-info { background: var(--blue-dark); border: 1px solid var(--blue-border); color: var(--blue); }
+    /* ---- BUTTONS ---- */
+    .btn-primary{background:linear-gradient(135deg,#1d4ed8,#0ea5e9);color:white;border:none;border-radius:8px;padding:11px 26px;font-size:13px;font-weight:700;font-family:'DM Mono',monospace;cursor:pointer;letter-spacing:1px;transition:opacity .2s}
+    .btn-primary:hover{opacity:.9}
+    .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+    .btn-danger{background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b;border-radius:6px;padding:4px 10px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer}
+    .btn-success{background:#14532d;color:#86efac;border:1px solid #16a34a;border-radius:6px;padding:4px 10px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer}
+    .btn-info{background:var(--blue-dark);color:var(--blue);border:1px solid var(--blue-border);border-radius:6px;padding:4px 10px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer}
+    .btn-secondary{background:#1a2535;color:var(--muted);border:1px solid var(--border2);border-radius:6px;padding:8px 14px;font-size:12px;font-family:'DM Mono',monospace;cursor:pointer}
+    .btn-warning{background:#451a03;color:var(--orange);border:1px solid #92400e;border-radius:6px;padding:4px 10px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer}
 
-    /* TABLE */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th { background: var(--bg); color: var(--muted); padding: 10px 12px; text-align: left; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; border-bottom: 2px solid var(--border); white-space: nowrap; }
-    td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
-    tfoot td { border-top: 2px solid var(--border2); font-weight: 700; }
-    .actions { display: flex; gap: 6px; }
+    /* ---- ALERTS ---- */
+    .alert{border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px}
+    .alert-success{background:#052e16;border:1px solid #16a34a;color:#86efac}
+    .alert-error{background:#2d0a0a;border:1px solid #991b1b;color:#fca5a5}
+    .alert-info{background:var(--blue-dark);border:1px solid var(--blue-border);color:var(--blue)}
+    .alert-warning{background:#451a03;border:1px solid #92400e;color:var(--orange)}
 
-    /* BADGE */
-    .badge { border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 700; display: inline-block; }
-    .badge-blue { background: #38bdf822; color: var(--blue); border: 1px solid #38bdf855; }
-    .badge-green { background: #a3e63522; color: var(--green); border: 1px solid #a3e63555; }
-    .badge-pink { background: #f472b622; color: var(--pink); border: 1px solid #f472b655; }
-    .badge-orange { background: #fb923c22; color: var(--orange); border: 1px solid #fb923c55; }
+    /* ---- TABLE ---- */
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    th{background:var(--bg);color:var(--muted);padding:10px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid var(--border);white-space:nowrap}
+    td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+    tfoot td{border-top:2px solid var(--border2);font-weight:700}
+    .actions{display:flex;gap:6px;flex-wrap:wrap}
 
-    /* STATS */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; margin-bottom: 20px; }
-    .stat-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; text-align: center; }
-    .stat-num { font-size: 26px; font-weight: 700; font-family: 'Syne', sans-serif; color: var(--blue); }
-    .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+    /* ---- BADGES ---- */
+    .badge{border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;display:inline-block}
+    .badge-blue{background:#38bdf822;color:var(--blue);border:1px solid #38bdf855}
+    .badge-green{background:#a3e63522;color:var(--green);border:1px solid #a3e63555}
+    .badge-pink{background:#f472b622;color:var(--pink);border:1px solid #f472b655}
+    .badge-orange{background:#fb923c22;color:var(--orange);border:1px solid #fb923c55}
+    .badge-yellow{background:#fbbf2422;color:var(--yellow);border:1px solid #fbbf2455}
+    .badge-red{background:#f8717122;color:var(--red);border:1px solid #f8717155}
 
-    /* MODAL */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
-    .modal-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 24px; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-    .modal-title { font-size: 15px; font-weight: 700; color: var(--blue); font-family: 'Syne', sans-serif; }
-    .modal-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+    /* ---- STATS ---- */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+    .stat-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;text-align:center}
+    .stat-num{font-size:24px;font-weight:700;font-family:'Syne',sans-serif;color:var(--blue)}
+    .stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px}
 
-    /* DETALLE */
-    .detalle-section { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
-    .detalle-title { font-size: 10px; font-weight: 700; color: var(--blue); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
-    .detalle-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 16px; }
-    .detalle-row { display: flex; gap: 6px; align-items: baseline; }
-    .detalle-lbl { font-size: 10px; color: var(--muted); min-width: 120px; flex-shrink: 0; }
-    .detalle-val { font-size: 12px; color: var(--text); }
+    /* ---- MODAL ---- */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+    .modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:24px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .modal-title{font-size:15px;font-weight:700;color:var(--blue);font-family:'Syne',sans-serif}
+    .modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
 
-    /* NUMERACION */
-    .num-badge { background: var(--blue-dark); border: 1px solid var(--blue-border); border-radius: 8px; padding: 6px 14px; font-size: 13px; color: var(--blue); font-weight: 700; }
+    /* ---- DETALLE ---- */
+    .detalle-section{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+    .detalle-title{font-size:10px;font-weight:700;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+    .detalle-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px 14px}
+    .detalle-row{display:flex;gap:6px;align-items:baseline}
+    .detalle-lbl{font-size:10px;color:var(--muted);min-width:120px;flex-shrink:0}
+    .detalle-val{font-size:12px;color:var(--text)}
 
-    /* SPINNER */
-    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #ffffff44; border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    /* ---- MISC ---- */
+    .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+    .page-title{font-size:17px;font-weight:700;color:#e0f2fe;font-family:'Syne',sans-serif}
+    .num-badge{background:var(--blue-dark);border:1px solid var(--blue-border);border-radius:8px;padding:6px 14px;font-size:13px;color:var(--blue);font-weight:700}
+    .empty{text-align:center;color:var(--muted);padding:44px;font-size:13px}
+    .divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+    .user-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+    .user-row:last-child{border-bottom:none}
+    .user-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+    .avatar-admin{background:#fbbf2422;color:var(--yellow);border:1px solid #fbbf2455}
+    .avatar-operario{background:#38bdf822;color:var(--blue);border:1px solid #38bdf855}
+    .user-info{flex:1}
+    .user-name{font-size:13px;font-weight:600}
+    .user-email{font-size:11px;color:var(--muted);margin-top:2px}
 
-    /* LOADING */
-    .loading-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; color: var(--blue); font-size: 14px; }
-    .loading-logo { font-size: 48px; animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-    /* EMPTY */
-    .empty { text-align: center; color: var(--muted); padding: 48px; }
-
-    /* NUMERACION TOP */
-    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
-    .page-title { font-size: 17px; font-weight: 700; color: #e0f2fe; font-family: 'Syne', sans-serif; }
-
-    @media (max-width: 600px) {
-      .header { padding: 14px 16px; }
-      .body { padding: 16px; }
-      .grid { grid-template-columns: 1fr 1fr; }
-      .detalle-grid { grid-template-columns: 1fr; }
+    @media(max-width:600px){
+      .header{padding:12px 14px}
+      .header-title h1{font-size:13px}
+      .body{padding:14px}
+      .grid{grid-template-columns:1fr 1fr}
+      .detalle-grid{grid-template-columns:1fr}
+      .header-right{gap:6px}
     }
   </style>
 </head>
 <body>
 
 <!-- LOADING -->
-<div id="loading-screen" class="loading-screen">
+<div id="loading-screen">
   <div class="loading-logo">🧪</div>
-  <div>Conectando con Firebase...</div>
+  <div style="font-size:13px">Iniciando sistema...</div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 40%,#0d2035 0%,#0d1117 70%)">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="icon">🧪</span>
+      <h1>CONTROL METABISULFITO</h1>
+      <p>Bodega Sta. Rosa</p>
+    </div>
+    <div id="login-error" class="login-error"></div>
+    <div class="login-field">
+      <label>Correo electrónico</label>
+      <input id="l-email" type="email" placeholder="usuario@empresa.com" onkeydown="if(event.key==='Enter')loginSubmit()"/>
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input id="l-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginSubmit()"/>
+    </div>
+    <button class="btn-login" id="btn-login" onclick="loginSubmit()">INGRESAR</button>
+  </div>
 </div>
 
 <!-- APP -->
-<div id="app" style="display:none">
+<div id="app-screen" style="display:none">
+
   <!-- HEADER -->
   <div class="header">
     <div class="logo">🧪</div>
     <div class="header-title">
       <h1>CONTROL DE METABISULFITO DE SODIO</h1>
-      <p>Sistema de gestión de despachos · Bodega Sta. Rosa</p>
+      <p>Bodega Sta. Rosa · FOR-BOD-05</p>
     </div>
-    <div class="header-stat">
-      <span id="total-registros">0</span>
-      Registros totales
+    <div class="header-right">
+      <div class="user-badge" id="header-user">—</div>
+      <span id="header-role" class="role-badge role-operario">operario</span>
+      <button class="btn-logout" onclick="logoutUser()">Salir</button>
     </div>
   </div>
 
   <!-- TABS -->
-  <div class="tabs">
+  <div class="tabs" id="tabs-bar">
     <button class="tab-btn active" onclick="switchTab(0)">📋 Nuevo Registro</button>
     <button class="tab-btn" onclick="switchTab(1)">📁 Registros</button>
-    <button class="tab-btn" onclick="switchTab(2)">📊 Reportes</button>
+    <!-- Admin tabs added dynamically -->
   </div>
 
   <div class="body">
-    <!-- ALERTAS -->
     <div id="alert-box"></div>
 
-    <!-- =================== TAB 0: NUEVO REGISTRO =================== -->
+    <!-- ===== TAB 0: NUEVO REGISTRO ===== -->
     <div id="tab-0">
       <div class="top-bar">
         <div class="page-title">Nuevo Despacho</div>
         <div class="num-badge">N° <span id="next-num">00001</span></div>
       </div>
 
-      <!-- TRANSPORTISTA -->
       <div class="section">
         <div class="section-title">🚛 Información del Transportista</div>
         <div class="grid">
-          <div class="field"><label>Placa del Vehículo</label><input id="f-placa" type="text" placeholder="ABC-1234"></div>
-          <div class="field"><label>Nombre del Conductor *</label><input id="f-conductor" type="text" placeholder="Nombre completo"></div>
-          <div class="field"><label>Fecha Inicio Transporte</label><input id="f-fechaInicio" type="date"></div>
-          <div class="field"><label>Hora de Salida</label><input id="f-horaSalida" type="time"></div>
-          <div class="field"><label>Punto de Partida</label><input id="f-puntoPartida" type="text" placeholder="Ej: Bodega Sta. Rosa"></div>
-          <div class="field"><label>Fecha Fin Transporte</label><input id="f-fechaFin" type="date"></div>
-          <div class="field"><label>Hora de Llegada</label><input id="f-horaLlegada" type="time"></div>
-          <div class="field"><label>Punto de Llegada</label><input id="f-puntoLlegada" type="text" placeholder="Destino"></div>
-          <div class="field"><label>Ruta del Transporte</label><input id="f-ruta" type="text" placeholder="Ruta"></div>
-          <div class="field"><label>Guía MDI</label><input id="f-guiaMdi" type="text"></div>
-          <div class="field"><label>Lugar de Pesca / Productor</label><input id="f-lugarPesca" type="text"></div>
-          <div class="field"><label>Nro. Guía Remisión/Pesca</label><input id="f-nroGuia" type="text"></div>
-          <div class="field"><label>Código Recibidor</label><input id="f-codRecibidor" type="text"></div>
+          <div class="field"><label>Placa del Vehículo</label><input id="f-placa" type="text" placeholder="ABC-1234"/></div>
+          <div class="field"><label>Nombre del Conductor ★</label><input id="f-conductor" type="text" placeholder="Nombre completo"/></div>
+          <div class="field"><label>Fecha Inicio Transporte</label><input id="f-fechaInicio" type="date"/></div>
+          <div class="field"><label>Hora de Salida</label><input id="f-horaSalida" type="time"/></div>
+          <div class="field"><label>Punto de Partida</label><input id="f-puntoPartida" type="text" placeholder="Ej: Bodega Sta. Rosa"/></div>
+          <div class="field"><label>Fecha Fin Transporte</label><input id="f-fechaFin" type="date"/></div>
+          <div class="field"><label>Hora de Llegada</label><input id="f-horaLlegada" type="time"/></div>
+          <div class="field"><label>Punto de Llegada</label><input id="f-puntoLlegada" type="text"/></div>
+          <div class="field"><label>Ruta del Transporte</label><input id="f-ruta" type="text"/></div>
+          <div class="field"><label>Guía MDI</label><input id="f-guiaMdi" type="text"/></div>
+          <div class="field"><label>Lugar de Pesca / Productor</label><input id="f-lugarPesca" type="text"/></div>
+          <div class="field"><label>Nro. Guía Remisión/Pesca</label><input id="f-nroGuia" type="text"/></div>
+          <div class="field"><label>Código Recibidor</label><input id="f-codRecibidor" type="text"/></div>
         </div>
       </div>
 
-      <!-- DESPACHO -->
       <div class="section">
-        <div class="section-title">📦 Despacho de Metabisulfito de Sodio</div>
+        <div class="section-title">📦 Despacho de Metabisulfito ★</div>
         <div class="grid">
-          <div class="field"><label>Fecha del Despacho *</label><input id="f-fechaDespacho" type="date"></div>
-          <div class="field"><label>Solicitado Por</label><input id="f-solicitadoPor" type="text"></div>
-          <div class="field"><label>Despachado Por</label><input id="f-despachador" type="text"></div>
-          <div class="field"><label>Cantidad de Sacos</label><input id="f-cantSacos" type="number" min="0" placeholder="0"></div>
-          <div class="field"><label>Cantidad en KG</label><input id="f-cantKg" type="number" min="0" step="0.01" placeholder="0.00"></div>
-          <div class="field"><label>Lote del Saco</label><input id="f-lote" type="text"></div>
-          <div class="field"><label>Marca del Saco</label><input id="f-marca" type="text"></div>
-          <div class="field"><label>Numeración del Saco</label><input id="f-numSaco" type="text"></div>
+          <div class="field"><label>Fecha del Despacho ★</label><input id="f-fechaDespacho" type="date"/></div>
+          <div class="field"><label>Solicitado Por</label><input id="f-solicitadoPor" type="text"/></div>
+          <div class="field"><label>Despachado Por</label><input id="f-despachador" type="text"/></div>
+          <div class="field"><label>Cantidad de Sacos</label><input id="f-cantSacos" type="number" min="0" placeholder="0"/></div>
+          <div class="field"><label>Cantidad en KG</label><input id="f-cantKg" type="number" min="0" step="0.01" placeholder="0.00"/></div>
+          <div class="field"><label>Lote del Saco</label><input id="f-lote" type="text"/></div>
+          <div class="field"><label>Marca del Saco</label><input id="f-marca" type="text"/></div>
+          <div class="field"><label>Numeración del Saco</label><input id="f-numSaco" type="text"/></div>
         </div>
       </div>
 
-      <!-- DEVOLUCION -->
       <div class="section">
-        <div class="section-title">🔄 Devolución de Metabisulfito de Sodio</div>
+        <div class="section-title">🔄 Devolución de Metabisulfito</div>
         <div class="grid">
-          <div class="field"><label>Fecha de Devolución</label><input id="f-fechaDev" type="date"></div>
-          <div class="field"><label>Devolución Cantidad Sacos</label><input id="f-devSacos" type="number" min="0" placeholder="0"></div>
-          <div class="field"><label>Devolución Cantidad KG</label><input id="f-devKg" type="number" min="0" step="0.01" placeholder="0.00"></div>
-          <div class="field"><label>Devolución Numeración Saco</label><input id="f-devNumSaco" type="text"></div>
+          <div class="field"><label>Fecha de Devolución</label><input id="f-fechaDev" type="date"/></div>
+          <div class="field"><label>Devolución Cantidad Sacos</label><input id="f-devSacos" type="number" min="0" placeholder="0"/></div>
+          <div class="field"><label>Devolución Cantidad KG</label><input id="f-devKg" type="number" min="0" step="0.01" placeholder="0.00"/></div>
+          <div class="field"><label>Devolución Numeración Saco</label><input id="f-devNumSaco" type="text"/></div>
         </div>
       </div>
 
-      <!-- OBSERVACION -->
       <div class="section">
         <div class="section-title">📝 Observaciones</div>
-        <div class="field">
-          <textarea id="f-obs" placeholder="Observaciones adicionales..." style="width:100%"></textarea>
-        </div>
+        <div class="field"><textarea id="f-obs" placeholder="Observaciones adicionales..." style="width:100%"></textarea></div>
       </div>
 
-      <button class="btn-primary" id="btn-guardar" onclick="guardarRegistro()">
-        ✅ GUARDAR REGISTRO
-      </button>
+      <button class="btn-primary" id="btn-guardar" onclick="guardarRegistro()">✅ GUARDAR REGISTRO</button>
     </div>
 
-    <!-- =================== TAB 1: REGISTROS =================== -->
+    <!-- ===== TAB 1: REGISTROS (solo admin) ===== -->
     <div id="tab-1" style="display:none">
       <div class="top-bar">
         <div class="page-title">Historial de Registros</div>
-        <button class="btn-secondary" onclick="cargarRegistros()">🔄 Actualizar</button>
+        <button class="btn-secondary" onclick="cargarTodo()">🔄 Actualizar</button>
       </div>
       <div class="section">
-        <div id="tabla-registros">
-          <div class="empty">Cargando registros...</div>
-        </div>
+        <div id="tabla-registros"><div class="empty">Cargando...</div></div>
       </div>
     </div>
 
-    <!-- =================== TAB 2: REPORTES =================== -->
+    <!-- ===== TAB 2: REPORTES (solo admin) ===== -->
     <div id="tab-2" style="display:none">
-      <div class="page-title" style="margin-bottom:18px">Reportes y Estadísticas</div>
-
-      <!-- FILTROS -->
+      <div class="page-title" style="margin-bottom:16px">Reportes y Estadísticas</div>
       <div class="section">
         <div class="section-title">🔍 Filtros</div>
         <div class="grid">
-          <div class="field"><label>Fecha desde</label><input id="r-desde" type="date" oninput="aplicarFiltros()"></div>
-          <div class="field"><label>Fecha hasta</label><input id="r-hasta" type="date" oninput="aplicarFiltros()"></div>
-          <div class="field"><label>Conductor</label><input id="r-conductor" type="text" placeholder="Buscar conductor..." oninput="aplicarFiltros()"></div>
-          <div class="field"><label>Solicitado Por</label><input id="r-solicitado" type="text" placeholder="Buscar..." oninput="aplicarFiltros()"></div>
-          <div class="field"><label>Lugar de Pesca</label><input id="r-lugar" type="text" placeholder="Buscar lugar..." oninput="aplicarFiltros()"></div>
+          <div class="field"><label>Fecha desde</label><input id="r-desde" type="date" oninput="aplicarFiltros()"/></div>
+          <div class="field"><label>Fecha hasta</label><input id="r-hasta" type="date" oninput="aplicarFiltros()"/></div>
+          <div class="field"><label>Conductor</label><input id="r-conductor" type="text" placeholder="Buscar..." oninput="aplicarFiltros()"/></div>
+          <div class="field"><label>Solicitado Por</label><input id="r-solicitado" type="text" placeholder="Buscar..." oninput="aplicarFiltros()"/></div>
+          <div class="field"><label>Lugar de Pesca</label><input id="r-lugar" type="text" placeholder="Buscar..." oninput="aplicarFiltros()"/></div>
         </div>
-        <div style="margin-top:12px">
-          <button class="btn-secondary" onclick="limpiarFiltros()">✕ Limpiar filtros</button>
-        </div>
+        <div style="margin-top:12px"><button class="btn-secondary" onclick="limpiarFiltros()">✕ Limpiar filtros</button></div>
       </div>
-
-      <!-- STATS -->
-      <div class="stats-grid" id="stats-grid">
+      <div class="stats-grid">
         <div class="stat-card"><div class="stat-num" id="s-despachos">0</div><div class="stat-label">Despachos</div></div>
         <div class="stat-card"><div class="stat-num" id="s-sacos">0</div><div class="stat-label">Total Sacos</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:var(--orange)" id="s-kgdesp">0</div><div class="stat-label">KG Despachados</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="s-kgdev">0</div><div class="stat-label">KG Devueltos</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:var(--pink)" id="s-kguso">0</div><div class="stat-label">KG Utilizados</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--orange)" id="s-kgdesp">0 kg</div><div class="stat-label">KG Despachados</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="s-kgdev">0 kg</div><div class="stat-label">KG Devueltos</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--pink)" id="s-kguso">0 kg</div><div class="stat-label">KG Utilizados</div></div>
       </div>
-
-      <!-- TABLA REPORTE -->
       <div class="section">
         <div class="section-title">📋 Detalle del Período</div>
-        <div id="tabla-reporte">
-          <div class="empty">Aplica filtros para ver el reporte</div>
-        </div>
+        <div id="tabla-reporte"><div class="empty">Aplica filtros para ver el reporte</div></div>
       </div>
     </div>
-  </div>
-</div>
+
+    <!-- ===== TAB 3: USUARIOS (solo admin) ===== -->
+    <div id="tab-3" style="display:none">
+      <div class="top-bar">
+        <div class="page-title">Gestión de Usuarios</div>
+      </div>
+
+      <!-- CREAR USUARIO -->
+      <div class="section">
+        <div class="section-title">➕ Crear Nuevo Usuario</div>
+        <div class="grid">
+          <div class="field"><label>Nombre completo</label><input id="u-nombre" type="text" placeholder="Nombre del usuario"/></div>
+          <div class="field"><label>Correo electrónico</label><input id="u-email" type="email" placeholder="correo@empresa.com"/></div>
+          <div class="field"><label>Contraseña temporal</label><input id="u-pass" type="text" placeholder="Mínimo 6 caracteres"/></div>
+          <div class="field">
+            <label>Rol</label>
+            <select id="u-rol">
+              <option value="operario">Operario — Solo ingreso de datos</option>
+              <option value="admin">Admin — Acceso completo</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn-primary" id="btn-crear-user" onclick="crearUsuario()">➕ CREAR USUARIO</button>
+        </div>
+      </div>
+
+      <!-- LISTA USUARIOS -->
+      <div class="section">
+        <div class="section-title">👥 Usuarios del Sistema</div>
+        <div id="lista-usuarios"><div class="empty">Cargando usuarios...</div></div>
+      </div>
+    </div>
+
+  </div><!-- /body -->
+</div><!-- /app -->
 
 <!-- MODAL DETALLE -->
-<div class="modal-overlay" id="modal" style="display:none" onclick="cerrarModal(event)">
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target.id==='modal')document.getElementById('modal').style.display='none'">
   <div class="modal-box">
     <div class="modal-header">
       <div class="modal-title" id="modal-title">Detalle del Registro</div>
@@ -305,290 +351,467 @@
   </div>
 </div>
 
-<!-- FIREBASE SDK -->
+<!-- FIREBASE -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getFirestore, collection, addDoc, getDocs, deleteDoc, doc,
-    query, orderBy, getCountFromServer
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp }             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc, query, orderBy, updateDoc }
+                                      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         signOut, onAuthStateChanged }
+                                      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyA8Wvcv3MQNYJT-LNm3UBjG4ta1u-OwrGI",
-    authDomain: "lector-qr-25878.firebaseapp.com",
-    projectId: "lector-qr-25878",
-    storageBucket: "lector-qr-25878.firebasestorage.app",
-    messagingSenderId: "8007483133",
-    appId: "1:8007483133:web:60b74409d146ad8a0bc894"
-  };
+// ---- CONFIG ----
+const firebaseConfig = {
+  apiKey: "AIzaSyA8Wvcv3MQNYJT-LNm3UBjG4ta1u-OwrGI",
+  authDomain: "lector-qr-25878.firebaseapp.com",
+  projectId: "lector-qr-25878",
+  storageBucket: "lector-qr-25878.firebasestorage.app",
+  messagingSenderId: "8007483133",
+  appId: "1:8007483133:web:60b74409d146ad8a0bc894"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const COL = "metabisulfito_despachos";
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+const COL_DESPACHOS = "metabisulfito_despachos";
+const COL_USUARIOS  = "metabisulfito_usuarios";
 
-  let todosRegistros = [];
-  let nextNum = 1;
+let currentUser   = null;   // Firebase Auth user
+let currentRole   = null;   // "admin" | "operario"
+let currentNombre = "";
+let todosRegistros = [];
+let nextNum = 1;
 
-  // ---- INIT ----
-  async function init() {
-    try {
-      await cargarTodo();
-      document.getElementById("loading-screen").style.display = "none";
-      document.getElementById("app").style.display = "block";
-    } catch (e) {
-      document.getElementById("loading-screen").innerHTML = `
-        <div style="color:#f87171;text-align:center;padding:32px">
-          <div style="font-size:32px;margin-bottom:12px">⚠️</div>
-          <div>Error al conectar con Firebase</div>
-          <div style="font-size:11px;color:#8b949e;margin-top:8px">${e.message}</div>
-          <div style="font-size:11px;color:#8b949e;margin-top:16px">Verifica que Firestore esté habilitado en tu proyecto Firebase<br>y que las reglas permitan lectura/escritura.</div>
-        </div>`;
-    }
+// ============================================================
+//  AUTH STATE
+// ============================================================
+onAuthStateChanged(auth, async (user) => {
+  hide("loading-screen");
+  if (!user) {
+    show("login-screen", "flex");
+    return;
   }
+  // Obtener rol desde Firestore
+  try {
+    const snap = await getDoc(doc(db, COL_USUARIOS, user.uid));
+    if (!snap.exists()) {
+      // Usuario no registrado en el sistema (no debería pasar)
+      await signOut(auth);
+      showLoginError("Tu cuenta no está registrada en el sistema.");
+      show("login-screen", "flex");
+      return;
+    }
+    const data = snap.data();
+    if (data.activo === false) {
+      await signOut(auth);
+      showLoginError("Tu cuenta está desactivada. Contacta al administrador.");
+      show("login-screen", "flex");
+      return;
+    }
+    currentUser   = user;
+    currentRole   = data.rol;
+    currentNombre = data.nombre || user.email;
+    initApp();
+  } catch(e) {
+    hide("loading-screen");
+    show("login-screen", "flex");
+    showLoginError("Error al verificar usuario: " + e.message);
+  }
+});
 
-  async function cargarTodo() {
-    const q = query(collection(db, COL), orderBy("createdAt", "desc"));
+// ============================================================
+//  LOGIN
+// ============================================================
+window.loginSubmit = async function() {
+  const email = document.getElementById("l-email").value.trim();
+  const pass  = document.getElementById("l-pass").value;
+  if (!email || !pass) { showLoginError("Ingresa correo y contraseña."); return; }
+  const btn = document.getElementById("btn-login");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Ingresando...';
+  document.getElementById("login-error").style.display = "none";
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    let msg = "Correo o contraseña incorrectos.";
+    if (e.code === "auth/too-many-requests") msg = "Demasiados intentos. Intenta más tarde.";
+    showLoginError(msg);
+    btn.disabled = false; btn.textContent = "INGRESAR";
+  }
+};
+
+window.logoutUser = async function() {
+  await signOut(auth);
+  currentUser = currentRole = null;
+  todosRegistros = [];
+  hide("app-screen");
+  show("login-screen", "flex");
+};
+
+// ============================================================
+//  INIT APP
+// ============================================================
+async function initApp() {
+  hide("login-screen");
+  show("app-screen", "block");
+  // Header
+  document.getElementById("header-user").textContent = currentNombre;
+  const rb = document.getElementById("header-role");
+  rb.textContent = currentRole;
+  rb.className = "role-badge " + (currentRole === "admin" ? "role-admin" : "role-operario");
+
+  // Tabs según rol
+  const tabs = document.getElementById("tabs-bar");
+  if (currentRole === "admin") {
+    tabs.innerHTML = `
+      <button class="tab-btn active" onclick="switchTab(0)">📋 Nuevo Registro</button>
+      <button class="tab-btn" onclick="switchTab(1)">📁 Registros</button>
+      <button class="tab-btn" onclick="switchTab(2)">📊 Reportes</button>
+      <button class="tab-btn" onclick="switchTab(3)">👥 Usuarios</button>`;
+  } else {
+    tabs.innerHTML = `<button class="tab-btn active" onclick="switchTab(0)">📋 Nuevo Registro</button>`;
+  }
+  switchTab(0);
+  await cargarTodo();
+}
+
+// ============================================================
+//  CARGAR DATOS
+// ============================================================
+window.cargarTodo = async function() {
+  try {
+    const q = query(collection(db, COL_DESPACHOS), orderBy("createdAt","desc"));
     const snap = await getDocs(q);
-    todosRegistros = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    todosRegistros = snap.docs.map(d => ({id: d.id, ...d.data()}));
     nextNum = todosRegistros.length > 0
-      ? Math.max(...todosRegistros.map(r => parseInt(r.numeracion) || 0)) + 1
-      : 1;
-    document.getElementById("next-num").textContent = String(nextNum).padStart(5, "0");
-    document.getElementById("total-registros").textContent = todosRegistros.length;
-    renderTabla(todosRegistros);
-    aplicarFiltros();
+      ? Math.max(...todosRegistros.map(r => parseInt(r.numeracion)||0)) + 1 : 1;
+    document.getElementById("next-num").textContent = String(nextNum).padStart(5,"0");
+    if (currentRole === "admin") {
+      renderTabla();
+      aplicarFiltros();
+      cargarUsuarios();
+    }
+  } catch(e) {
+    showAlert("Error al cargar datos: " + e.message, "error");
   }
+};
 
-  // ---- GUARDAR ----
-  window.guardarRegistro = async function() {
-    const conductor = document.getElementById("f-conductor").value.trim();
-    const fechaDespacho = document.getElementById("f-fechaDespacho").value;
-    if (!conductor || !fechaDespacho) {
-      showAlert("Por favor completa: Conductor y Fecha del Despacho.", "error");
-      return;
-    }
-    const btn = document.getElementById("btn-guardar");
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Guardando...';
-    try {
-      const reg = {
-        numeracion: String(nextNum).padStart(5, "0"),
-        placa: v("f-placa"), conductor, fechaInicio: v("f-fechaInicio"),
-        horaSalida: v("f-horaSalida"), puntoPartida: v("f-puntoPartida"),
-        fechaFin: v("f-fechaFin"), horaLlegada: v("f-horaLlegada"),
-        puntoLlegada: v("f-puntoLlegada"), ruta: v("f-ruta"),
-        guiaMdi: v("f-guiaMdi"), lugarPesca: v("f-lugarPesca"),
-        nroGuia: v("f-nroGuia"), codRecibidor: v("f-codRecibidor"),
-        fechaDespacho, solicitadoPor: v("f-solicitadoPor"),
-        despachador: v("f-despachador"),
-        cantSacos: parseFloat(v("f-cantSacos")) || 0,
-        cantKg: parseFloat(v("f-cantKg")) || 0,
-        lote: v("f-lote"), marca: v("f-marca"), numSaco: v("f-numSaco"),
-        fechaDev: v("f-fechaDev"),
-        devSacos: parseFloat(v("f-devSacos")) || 0,
-        devKg: parseFloat(v("f-devKg")) || 0,
-        devNumSaco: v("f-devNumSaco"), observacion: v("f-obs"),
-        createdAt: new Date().toISOString()
-      };
-      await addDoc(collection(db, COL), reg);
-      limpiarFormulario();
-      await cargarTodo();
-      showAlert("✅ Registro guardado exitosamente en Firebase.", "success");
-      switchTab(1);
-    } catch (e) {
-      showAlert("Error al guardar: " + e.message, "error");
-    }
-    btn.disabled = false;
-    btn.innerHTML = "✅ GUARDAR REGISTRO";
-  };
-
-  // ---- ELIMINAR ----
-  window.eliminarRegistro = async function(id) {
-    if (!confirm("¿Eliminar este registro? Esta acción no se puede deshacer.")) return;
-    try {
-      await deleteDoc(doc(db, COL, id));
-      await cargarTodo();
-      showAlert("Registro eliminado.", "info");
-    } catch (e) {
-      showAlert("Error al eliminar: " + e.message, "error");
-    }
-  };
-
-  // ---- CARGAR ----
-  window.cargarRegistros = async function() {
+// ============================================================
+//  GUARDAR REGISTRO
+// ============================================================
+window.guardarRegistro = async function() {
+  const conductor     = document.getElementById("f-conductor").value.trim();
+  const fechaDespacho = document.getElementById("f-fechaDespacho").value;
+  if (!conductor || !fechaDespacho) {
+    showAlert("Campos obligatorios: Conductor ★ y Fecha del Despacho ★", "error"); return;
+  }
+  const btn = document.getElementById("btn-guardar");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Guardando...';
+  try {
+    const reg = {
+      numeracion: String(nextNum).padStart(5,"0"),
+      ingresadoPor: currentNombre,
+      ingresadoPorUid: currentUser.uid,
+      placa:          v("f-placa"),
+      conductor,
+      fechaInicio:    v("f-fechaInicio"),
+      horaSalida:     v("f-horaSalida"),
+      puntoPartida:   v("f-puntoPartida"),
+      fechaFin:       v("f-fechaFin"),
+      horaLlegada:    v("f-horaLlegada"),
+      puntoLlegada:   v("f-puntoLlegada"),
+      ruta:           v("f-ruta"),
+      guiaMdi:        v("f-guiaMdi"),
+      lugarPesca:     v("f-lugarPesca"),
+      nroGuia:        v("f-nroGuia"),
+      codRecibidor:   v("f-codRecibidor"),
+      fechaDespacho,
+      solicitadoPor:  v("f-solicitadoPor"),
+      despachador:    v("f-despachador"),
+      cantSacos:      parseFloat(v("f-cantSacos"))||0,
+      cantKg:         parseFloat(v("f-cantKg"))||0,
+      lote:           v("f-lote"),
+      marca:          v("f-marca"),
+      numSaco:        v("f-numSaco"),
+      fechaDev:       v("f-fechaDev"),
+      devSacos:       parseFloat(v("f-devSacos"))||0,
+      devKg:          parseFloat(v("f-devKg"))||0,
+      devNumSaco:     v("f-devNumSaco"),
+      observacion:    v("f-obs"),
+      createdAt:      new Date().toISOString()
+    };
+    await addDoc(collection(db, COL_DESPACHOS), reg);
+    limpiarFormulario();
     await cargarTodo();
-    showAlert("Registros actualizados.", "info");
-  };
-
-  // ---- RENDER TABLA ----
-  function renderTabla(data) {
-    const wrap = document.getElementById("tabla-registros");
-    if (data.length === 0) {
-      wrap.innerHTML = '<div class="empty">No hay registros. Crea uno en "Nuevo Registro".</div>';
-      return;
-    }
-    wrap.innerHTML = `<div class="table-wrap"><table>
-      <thead><tr>
-        <th>N°</th><th>Fecha Despacho</th><th>Conductor</th><th>Placa</th>
-        <th>Lugar Pesca</th><th>Sacos</th><th>KG Desp.</th><th>KG Dev.</th><th>Acciones</th>
-      </tr></thead>
-      <tbody>${data.map(r => `
-        <tr>
-          <td><span class="badge badge-blue">${r.numeracion}</span></td>
-          <td>${r.fechaDespacho || "—"}</td>
-          <td>${r.conductor || "—"}</td>
-          <td>${r.placa || "—"}</td>
-          <td>${r.lugarPesca || "—"}</td>
-          <td>${r.cantSacos || "—"}</td>
-          <td>${r.cantKg ? r.cantKg + " kg" : "—"}</td>
-          <td>${r.devKg ? '<span class="badge badge-green">' + r.devKg + ' kg</span>' : '<span style="color:var(--muted)">—</span>'}</td>
-          <td><div class="actions">
-            <button class="btn-info" onclick="verDetalle('${r.id}')">Ver</button>
-            <button class="btn-danger" onclick="eliminarRegistro('${r.id}')">Eliminar</button>
-          </div></td>
-        </tr>`).join("")}
-      </tbody>
-    </table></div>`;
+    showAlert("✅ Registro N° " + reg.numeracion + " guardado correctamente.", "success");
+  } catch(e) {
+    showAlert("Error al guardar: " + e.message, "error");
   }
+  btn.disabled = false; btn.textContent = "✅ GUARDAR REGISTRO";
+};
 
-  // ---- FILTROS REPORTE ----
-  window.aplicarFiltros = function() {
-    const desde = document.getElementById("r-desde").value;
-    const hasta = document.getElementById("r-hasta").value;
-    const conductor = document.getElementById("r-conductor").value.toLowerCase();
-    const solicitado = document.getElementById("r-solicitado").value.toLowerCase();
-    const lugar = document.getElementById("r-lugar").value.toLowerCase();
+// ============================================================
+//  ELIMINAR REGISTRO
+// ============================================================
+window.eliminarRegistro = async function(id) {
+  if (!confirm("¿Eliminar este registro permanentemente?")) return;
+  try {
+    await deleteDoc(doc(db, COL_DESPACHOS, id));
+    await cargarTodo();
+    showAlert("Registro eliminado.", "info");
+  } catch(e) {
+    showAlert("Error: " + e.message, "error");
+  }
+};
 
-    const filtrados = todosRegistros.filter(r => {
-      if (desde && r.fechaDespacho < desde) return false;
-      if (hasta && r.fechaDespacho > hasta) return false;
-      if (conductor && !(r.conductor || "").toLowerCase().includes(conductor)) return false;
-      if (solicitado && !(r.solicitadoPor || "").toLowerCase().includes(solicitado)) return false;
-      if (lugar && !(r.lugarPesca || "").toLowerCase().includes(lugar)) return false;
-      return true;
+// ============================================================
+//  RENDER TABLA REGISTROS
+// ============================================================
+function renderTabla() {
+  const wrap = document.getElementById("tabla-registros");
+  if (!todosRegistros.length) {
+    wrap.innerHTML = '<div class="empty">No hay registros aún.</div>'; return;
+  }
+  wrap.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr>
+      <th>N°</th><th>Fecha</th><th>Conductor</th><th>Placa</th>
+      <th>Lugar Pesca</th><th>Sacos</th><th>KG Desp.</th><th>KG Dev.</th>
+      <th>Ingresado Por</th><th>Acciones</th>
+    </tr></thead>
+    <tbody>${todosRegistros.map(r=>`<tr>
+      <td><span class="badge badge-blue">${r.numeracion}</span></td>
+      <td>${r.fechaDespacho||"—"}</td>
+      <td>${r.conductor||"—"}</td>
+      <td>${r.placa||"—"}</td>
+      <td>${r.lugarPesca||"—"}</td>
+      <td>${r.cantSacos||"—"}</td>
+      <td>${r.cantKg?r.cantKg+" kg":"—"}</td>
+      <td>${r.devKg?'<span class="badge badge-green">'+r.devKg+' kg</span>':'<span style="color:var(--muted)">—</span>'}</td>
+      <td><span style="font-size:11px;color:var(--muted)">${r.ingresadoPor||"—"}</span></td>
+      <td><div class="actions">
+        <button class="btn-info" onclick="verDetalle('${r.id}')">Ver</button>
+        <button class="btn-danger" onclick="eliminarRegistro('${r.id}')">Eliminar</button>
+      </div></td>
+    </tr>`).join("")}
+    </tbody></table></div>`;
+}
+
+// ============================================================
+//  FILTROS / REPORTES
+// ============================================================
+window.aplicarFiltros = function() {
+  const desde     = document.getElementById("r-desde").value;
+  const hasta     = document.getElementById("r-hasta").value;
+  const conductor = document.getElementById("r-conductor").value.toLowerCase();
+  const solicitado= document.getElementById("r-solicitado").value.toLowerCase();
+  const lugar     = document.getElementById("r-lugar").value.toLowerCase();
+
+  const f = todosRegistros.filter(r=>{
+    if(desde && r.fechaDespacho < desde) return false;
+    if(hasta && r.fechaDespacho > hasta) return false;
+    if(conductor && !(r.conductor||"").toLowerCase().includes(conductor)) return false;
+    if(solicitado && !(r.solicitadoPor||"").toLowerCase().includes(solicitado)) return false;
+    if(lugar && !(r.lugarPesca||"").toLowerCase().includes(lugar)) return false;
+    return true;
+  });
+
+  const tkd  = f.reduce((s,r)=>s+(r.cantKg||0),0);
+  const tkv  = f.reduce((s,r)=>s+(r.devKg||0),0);
+  const ts   = f.reduce((s,r)=>s+(r.cantSacos||0),0);
+
+  document.getElementById("s-despachos").textContent = f.length;
+  document.getElementById("s-sacos").textContent     = ts;
+  document.getElementById("s-kgdesp").textContent    = tkd.toFixed(1)+" kg";
+  document.getElementById("s-kgdev").textContent     = tkv.toFixed(1)+" kg";
+  document.getElementById("s-kguso").textContent     = (tkd-tkv).toFixed(1)+" kg";
+
+  const wrap = document.getElementById("tabla-reporte");
+  if(!f.length){ wrap.innerHTML='<div class="empty">Sin resultados.</div>'; return; }
+  wrap.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>N°</th><th>Fecha</th><th>Conductor</th><th>Placa</th>
+      <th>Lugar Pesca</th><th>Solicitado Por</th><th>Sacos</th>
+      <th>KG Desp.</th><th>KG Dev.</th><th>KG Usado</th></tr></thead>
+    <tbody>${f.map(r=>{const u=(r.cantKg||0)-(r.devKg||0);return`<tr>
+      <td><span class="badge badge-blue">${r.numeracion}</span></td>
+      <td>${r.fechaDespacho||"—"}</td><td>${r.conductor||"—"}</td><td>${r.placa||"—"}</td>
+      <td>${r.lugarPesca||"—"}</td><td>${r.solicitadoPor||"—"}</td><td>${r.cantSacos||"—"}</td>
+      <td>${r.cantKg?r.cantKg+" kg":"—"}</td><td>${r.devKg?r.devKg+" kg":"—"}</td>
+      <td><span class="badge badge-pink">${u.toFixed(1)} kg</span></td>
+    </tr>`}).join("")}
+    </tbody>
+    <tfoot><tr><td colspan="6" style="color:var(--muted)">TOTALES</td>
+      <td>${ts}</td>
+      <td style="color:var(--orange)">${tkd.toFixed(1)} kg</td>
+      <td style="color:var(--green)">${tkv.toFixed(1)} kg</td>
+      <td style="color:var(--pink)">${(tkd-tkv).toFixed(1)} kg</td>
+    </tr></tfoot></table></div>`;
+};
+
+window.limpiarFiltros = function(){
+  ["r-desde","r-hasta","r-conductor","r-solicitado","r-lugar"].forEach(id=>document.getElementById(id).value="");
+  aplicarFiltros();
+};
+
+// ============================================================
+//  GESTIÓN DE USUARIOS
+// ============================================================
+window.crearUsuario = async function() {
+  const nombre = document.getElementById("u-nombre").value.trim();
+  const email  = document.getElementById("u-email").value.trim();
+  const pass   = document.getElementById("u-pass").value.trim();
+  const rol    = document.getElementById("u-rol").value;
+  if(!nombre||!email||!pass){ showAlert("Completa todos los campos del usuario.","error"); return; }
+  if(pass.length < 6){ showAlert("La contraseña debe tener al menos 6 caracteres.","error"); return; }
+
+  const btn = document.getElementById("btn-crear-user");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Creando...';
+  try {
+    // Crear en Firebase Auth
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    // Guardar perfil en Firestore
+    await setDoc(doc(db, COL_USUARIOS, cred.user.uid), {
+      nombre, email, rol, activo: true,
+      creadoPor: currentNombre,
+      creadoEn: new Date().toISOString()
     });
-
-    const totalKgDesp = filtrados.reduce((s, r) => s + (r.cantKg || 0), 0);
-    const totalKgDev = filtrados.reduce((s, r) => s + (r.devKg || 0), 0);
-    const totalSacos = filtrados.reduce((s, r) => s + (r.cantSacos || 0), 0);
-
-    document.getElementById("s-despachos").textContent = filtrados.length;
-    document.getElementById("s-sacos").textContent = totalSacos;
-    document.getElementById("s-kgdesp").textContent = totalKgDesp.toFixed(1) + " kg";
-    document.getElementById("s-kgdev").textContent = totalKgDev.toFixed(1) + " kg";
-    document.getElementById("s-kguso").textContent = (totalKgDesp - totalKgDev).toFixed(1) + " kg";
-
-    const wrap = document.getElementById("tabla-reporte");
-    if (filtrados.length === 0) {
-      wrap.innerHTML = '<div class="empty">No hay registros con los filtros seleccionados.</div>';
-      return;
-    }
-    wrap.innerHTML = `<div class="table-wrap"><table>
-      <thead><tr>
-        <th>N°</th><th>Fecha</th><th>Conductor</th><th>Placa</th>
-        <th>Lugar Pesca</th><th>Solicitado Por</th><th>Sacos</th>
-        <th>KG Desp.</th><th>KG Dev.</th><th>KG Usado</th>
-      </tr></thead>
-      <tbody>${filtrados.map(r => {
-        const usado = (r.cantKg || 0) - (r.devKg || 0);
-        return `<tr>
-          <td><span class="badge badge-blue">${r.numeracion}</span></td>
-          <td>${r.fechaDespacho || "—"}</td>
-          <td>${r.conductor || "—"}</td>
-          <td>${r.placa || "—"}</td>
-          <td>${r.lugarPesca || "—"}</td>
-          <td>${r.solicitadoPor || "—"}</td>
-          <td>${r.cantSacos || "—"}</td>
-          <td>${r.cantKg ? r.cantKg + " kg" : "—"}</td>
-          <td>${r.devKg ? r.devKg + " kg" : "—"}</td>
-          <td><span class="badge badge-pink">${usado.toFixed(1)} kg</span></td>
-        </tr>`;
-      }).join("")}
-      </tbody>
-      <tfoot><tr>
-        <td colspan="6" style="color:var(--muted)">TOTALES</td>
-        <td>${totalSacos}</td>
-        <td style="color:var(--orange)">${totalKgDesp.toFixed(1)} kg</td>
-        <td style="color:var(--green)">${totalKgDev.toFixed(1)} kg</td>
-        <td style="color:var(--pink)">${(totalKgDesp - totalKgDev).toFixed(1)} kg</td>
-      </tr></tfoot>
-    </table></div>`;
-  };
-
-  window.limpiarFiltros = function() {
-    ["r-desde","r-hasta","r-conductor","r-solicitado","r-lugar"].forEach(id => document.getElementById(id).value = "");
-    aplicarFiltros();
-  };
-
-  // ---- VER DETALLE ----
-  window.verDetalle = function(id) {
-    const r = todosRegistros.find(x => x.id === id);
-    if (!r) return;
-    document.getElementById("modal-title").textContent = "Orden de Despacho N° " + r.numeracion;
-    const fila = (l, v) => v ? `<div class="detalle-row"><span class="detalle-lbl">${l}:</span><span class="detalle-val">${v}</span></div>` : "";
-    document.getElementById("modal-body").innerHTML = `
-      <div class="detalle-section">
-        <div class="detalle-title">🚛 Transportista</div>
-        <div class="detalle-grid">
-          ${fila("Placa", r.placa)}${fila("Conductor", r.conductor)}
-          ${fila("Fecha Inicio", r.fechaInicio)}${fila("Hora Salida", r.horaSalida)}
-          ${fila("Punto Partida", r.puntoPartida)}${fila("Fecha Fin", r.fechaFin)}
-          ${fila("Hora Llegada", r.horaLlegada)}${fila("Punto Llegada", r.puntoLlegada)}
-          ${fila("Ruta", r.ruta)}${fila("Guía MDI", r.guiaMdi)}
-          ${fila("Lugar Pesca/Productor", r.lugarPesca)}${fila("Nro. Guía Remisión", r.nroGuia)}
-          ${fila("Código Recibidor", r.codRecibidor)}
-        </div>
-      </div>
-      <div class="detalle-section">
-        <div class="detalle-title">📦 Despacho</div>
-        <div class="detalle-grid">
-          ${fila("Fecha Despacho", r.fechaDespacho)}${fila("Solicitado Por", r.solicitadoPor)}
-          ${fila("Despachado Por", r.despachador)}${fila("Cantidad Sacos", r.cantSacos)}
-          ${fila("Cantidad KG", r.cantKg ? r.cantKg + " kg" : "")}${fila("Lote", r.lote)}
-          ${fila("Marca", r.marca)}${fila("Numeración Saco", r.numSaco)}
-        </div>
-      </div>
-      <div class="detalle-section">
-        <div class="detalle-title">🔄 Devolución</div>
-        <div class="detalle-grid">
-          ${fila("Fecha Devolución", r.fechaDev)}${fila("Sacos Devueltos", r.devSacos)}
-          ${fila("KG Devueltos", r.devKg ? r.devKg + " kg" : "")}${fila("Numeración Dev.", r.devNumSaco)}
-        </div>
-      </div>
-      ${r.observacion ? `<div class="detalle-section"><div class="detalle-title">📝 Observaciones</div><div style="font-size:13px">${r.observacion}</div></div>` : ""}
-    `;
-    document.getElementById("modal").style.display = "flex";
-  };
-
-  window.cerrarModal = function(e) {
-    if (e.target.id === "modal") document.getElementById("modal").style.display = "none";
-  };
-
-  // ---- UTILIDADES ----
-  function v(id) { return document.getElementById(id).value.trim(); }
-
-  function limpiarFormulario() {
-    ["f-placa","f-conductor","f-fechaInicio","f-horaSalida","f-puntoPartida","f-fechaFin",
-     "f-horaLlegada","f-puntoLlegada","f-ruta","f-guiaMdi","f-lugarPesca","f-nroGuia",
-     "f-codRecibidor","f-fechaDespacho","f-solicitadoPor","f-despachador","f-cantSacos",
-     "f-cantKg","f-lote","f-marca","f-numSaco","f-fechaDev","f-devSacos","f-devKg",
-     "f-devNumSaco","f-obs"].forEach(id => document.getElementById(id).value = "");
+    // Limpiar
+    ["u-nombre","u-email","u-pass"].forEach(id=>document.getElementById(id).value="");
+    document.getElementById("u-rol").value = "operario";
+    showAlert(`✅ Usuario "${nombre}" creado como ${rol}.`, "success");
+    cargarUsuarios();
+  } catch(e) {
+    let msg = e.message;
+    if(e.code==="auth/email-already-in-use") msg = "Ese correo ya está registrado.";
+    if(e.code==="auth/invalid-email") msg = "Correo inválido.";
+    showAlert("Error: " + msg, "error");
   }
+  btn.disabled = false; btn.textContent = "➕ CREAR USUARIO";
+};
 
-  function showAlert(msg, type = "success") {
-    const box = document.getElementById("alert-box");
-    box.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
-    setTimeout(() => box.innerHTML = "", 4000);
+async function cargarUsuarios() {
+  const wrap = document.getElementById("lista-usuarios");
+  try {
+    const snap = await getDocs(collection(db, COL_USUARIOS));
+    const users = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!users.length){ wrap.innerHTML='<div class="empty">No hay usuarios registrados.</div>'; return; }
+    wrap.innerHTML = users.map(u=>`
+      <div class="user-row">
+        <div class="user-avatar ${u.rol==='admin'?'avatar-admin':'avatar-operario'}">
+          ${(u.nombre||"?")[0].toUpperCase()}
+        </div>
+        <div class="user-info">
+          <div class="user-name">${u.nombre||"Sin nombre"}</div>
+          <div class="user-email">${u.email}</div>
+        </div>
+        <span class="badge ${u.rol==='admin'?'badge-yellow':'badge-blue'}">${u.rol}</span>
+        <span class="badge ${u.activo!==false?'badge-green':'badge-red'}">${u.activo!==false?'activo':'inactivo'}</span>
+        <div class="actions">
+          ${u.activo!==false
+            ? `<button class="btn-warning" onclick="toggleUsuario('${u.id}',false)">Desactivar</button>`
+            : `<button class="btn-success" onclick="toggleUsuario('${u.id}',true)">Activar</button>`}
+          ${u.rol==='operario'
+            ? `<button class="btn-warning" onclick="cambiarRol('${u.id}','admin')">→ Admin</button>`
+            : `<button class="btn-secondary" onclick="cambiarRol('${u.id}','operario')" style="font-size:11px">→ Operario</button>`}
+        </div>
+      </div>`).join("");
+  } catch(e) {
+    wrap.innerHTML = `<div class="empty">Error al cargar usuarios: ${e.message}</div>`;
   }
+}
 
-  window.switchTab = function(i) {
-    [0,1,2].forEach(j => {
-      document.getElementById("tab-" + j).style.display = j === i ? "block" : "none";
-      document.querySelectorAll(".tab-btn")[j].classList.toggle("active", j === i);
-    });
-  };
+window.toggleUsuario = async function(uid, estado) {
+  try {
+    await updateDoc(doc(db, COL_USUARIOS, uid), {activo: estado});
+    showAlert(estado ? "Usuario activado." : "Usuario desactivado.", "info");
+    cargarUsuarios();
+  } catch(e){ showAlert("Error: "+e.message,"error"); }
+};
 
-  init();
+window.cambiarRol = async function(uid, nuevoRol) {
+  if(!confirm(`¿Cambiar el rol a "${nuevoRol}"?`)) return;
+  try {
+    await updateDoc(doc(db, COL_USUARIOS, uid), {rol: nuevoRol});
+    showAlert("Rol actualizado.", "info");
+    cargarUsuarios();
+  } catch(e){ showAlert("Error: "+e.message,"error"); }
+};
+
+// ============================================================
+//  VER DETALLE
+// ============================================================
+window.verDetalle = function(id) {
+  const r = todosRegistros.find(x=>x.id===id);
+  if(!r) return;
+  document.getElementById("modal-title").textContent = "Orden N° " + r.numeracion;
+  const f = (l,v)=>v?`<div class="detalle-row"><span class="detalle-lbl">${l}:</span><span class="detalle-val">${v}</span></div>`:"";
+  document.getElementById("modal-body").innerHTML = `
+    <div class="detalle-section">
+      <div class="detalle-title">🚛 Transportista</div>
+      <div class="detalle-grid">
+        ${f("Placa",r.placa)}${f("Conductor",r.conductor)}
+        ${f("Fecha Inicio",r.fechaInicio)}${f("Hora Salida",r.horaSalida)}
+        ${f("Punto Partida",r.puntoPartida)}${f("Fecha Fin",r.fechaFin)}
+        ${f("Hora Llegada",r.horaLlegada)}${f("Punto Llegada",r.puntoLlegada)}
+        ${f("Ruta",r.ruta)}${f("Guía MDI",r.guiaMdi)}
+        ${f("Lugar Pesca",r.lugarPesca)}${f("Nro. Guía",r.nroGuia)}
+        ${f("Cód. Recibidor",r.codRecibidor)}
+      </div>
+    </div>
+    <div class="detalle-section">
+      <div class="detalle-title">📦 Despacho</div>
+      <div class="detalle-grid">
+        ${f("Fecha",r.fechaDespacho)}${f("Solicitado Por",r.solicitadoPor)}
+        ${f("Despachado Por",r.despachador)}${f("Sacos",r.cantSacos)}
+        ${f("KG",r.cantKg?r.cantKg+" kg":"")}${f("Lote",r.lote)}
+        ${f("Marca",r.marca)}${f("Num. Saco",r.numSaco)}
+      </div>
+    </div>
+    <div class="detalle-section">
+      <div class="detalle-title">🔄 Devolución</div>
+      <div class="detalle-grid">
+        ${f("Fecha",r.fechaDev)}${f("Sacos Dev.",r.devSacos)}
+        ${f("KG Dev.",r.devKg?r.devKg+" kg":"")}${f("Num. Saco Dev.",r.devNumSaco)}
+      </div>
+    </div>
+    ${r.observacion?`<div class="detalle-section"><div class="detalle-title">📝 Observaciones</div><div style="font-size:13px">${r.observacion}</div></div>`:""}
+    <div style="margin-top:10px;font-size:11px;color:var(--muted)">Ingresado por: ${r.ingresadoPor||"—"} · ${r.createdAt?new Date(r.createdAt).toLocaleString("es-EC"):""}</div>`;
+  document.getElementById("modal").style.display = "flex";
+};
+
+// ============================================================
+//  UTILIDADES
+// ============================================================
+window.switchTab = function(i) {
+  [0,1,2,3].forEach(j=>{
+    const t = document.getElementById("tab-"+j);
+    if(t) t.style.display = j===i?"block":"none";
+  });
+  document.querySelectorAll(".tab-btn").forEach((b,j)=>b.classList.toggle("active",j===i));
+};
+
+function v(id){ return document.getElementById(id)?.value.trim()||""; }
+
+function limpiarFormulario(){
+  ["f-placa","f-conductor","f-fechaInicio","f-horaSalida","f-puntoPartida","f-fechaFin",
+   "f-horaLlegada","f-puntoLlegada","f-ruta","f-guiaMdi","f-lugarPesca","f-nroGuia",
+   "f-codRecibidor","f-fechaDespacho","f-solicitadoPor","f-despachador","f-cantSacos",
+   "f-cantKg","f-lote","f-marca","f-numSaco","f-fechaDev","f-devSacos","f-devKg",
+   "f-devNumSaco","f-obs"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+}
+
+function showAlert(msg, type="success"){
+  const box = document.getElementById("alert-box");
+  box.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(()=>box.innerHTML="", 5000);
+}
+
+function showLoginError(msg){
+  const el = document.getElementById("login-error");
+  el.textContent = msg; el.style.display = "block";
+}
+
+function show(id, display="block"){ document.getElementById(id).style.display = display; }
+function hide(id){ document.getElementById(id).style.display = "none"; }
+
 </script>
 </body>
 </html>
