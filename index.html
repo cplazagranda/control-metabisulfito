@@ -532,8 +532,8 @@ if('serviceWorker' in navigator){
     self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','/index.html']))));
     self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>caches.match(e.request))));
   `;
-  const blob=new Blob([sw],{type:'application/javascript'});
-  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(function(){});
+  // SW registration via blob URL not supported in all contexts
+  // navigator.serviceWorker.register(URL.createObjectURL(blob));
 }
 </script>
 
@@ -558,6 +558,16 @@ const FB = {
 const fbApp = initializeApp(FB);
 const db    = getFirestore(fbApp);
 const auth  = getAuth(fbApp);
+
+// Safety fallback: if Firebase never fires onAuthStateChanged within 8s, show login
+setTimeout(()=>{
+  const ls = document.getElementById('loading-screen');
+  if(ls && ls.style.display !== 'none'){
+    ls.style.display = 'none';
+    const login = document.getElementById('login-screen');
+    if(login) login.style.display = 'flex';
+  }
+}, 8000);
 const CDESP = "metabisulfito_despachos";
 const CUSR  = "metabisulfito_usuarios";
 
@@ -1420,24 +1430,24 @@ function v(id){return g(id)?.value.trim()||"";}
 function g(id){return document.getElementById(id);}
 function show(id,d="block"){g(id).style.display=d;}
 function hide(id){g(id).style.display="none";}
-
-  const csel=document.getElementById("f-conductor");
-  if(csel) csel.value="";
-  const pf=document.getElementById("f-placa");
-  if(pf){pf.value="";pf.setAttribute("readonly","true");pf.style.background="#070e1a";pf.style.color="var(--cyan)";}
 function limpiarForm(){
   ["f-placa","f-conductor","f-conductor-manual","f-fechaInicio","f-horaSalida","f-puntoPartida","f-fechaFin",
    "f-horaLlegada","f-puntoLlegada","f-ruta","f-guiaMdi","f-lugarPesca","f-nroGuia",
    "f-codRecibidor","f-fechaDespacho","f-solicitadoPor","f-despachador","f-cantSacos",
    "f-cantKg","f-lote","f-marca","f-numSaco","f-fechaDev","f-devSacos","f-devKg",
-   "f-devNumSaco","f-obs"].forEach(id=>{const e=g(id);if(e)e.value="";});
+   "f-devNumSaco","f-obs"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
+  const csel=document.getElementById("f-conductor");
+  if(csel) csel.value="";
+  const pf=document.getElementById("f-placa");
+  if(pf){pf.value="";pf.setAttribute("readonly","true");pf.style.background="#070e1a";pf.style.color="var(--cyan)";}
+  const mw=document.getElementById("f-conductor-manual-wrap"); if(mw) mw.style.display="none";
 }
 function showAlert(msg,type="success"){
-  const b=g("alert-box");
+  const b=document.getElementById("alert-box");
   b.innerHTML=`<div class="alert alert-${type}">${msg}</div>`;
   setTimeout(()=>b.innerHTML="",5000);
 }
-function showLoginErr(msg){const e=g("lerror");e.textContent=msg;e.style.display="block";}
+function showLoginErr(msg){const e=document.getElementById("lerror");e.textContent=msg;e.style.display="block";}
 
 </script>
 </body>
