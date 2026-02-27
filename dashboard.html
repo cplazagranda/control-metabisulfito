@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Dashboard — Metabisulfito</title>
+  <link rel="stylesheet" href="../assets/styles.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="header">
+  <div class="header-logo">📊</div>
+  <div>
+    <div class="header-title">Dashboard</div>
+    <div class="header-sub" id="h-user">—</div>
+  </div>
+  <div class="header-right">
+    <a href="../index.html" style="color:var(--muted);font-size:20px;text-decoration:none">⌂</a>
+    <button class="btn btn-sm btn-ghost" onclick="cargarTodo()">🔄</button>
+    <button class="btn-exit" onclick="doLogout()">Salir</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="top-bar">
+    <div>
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Estadísticas globales de despachos</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card sc1"><div class="stat-icon">📋</div><div class="stat-num" id="s-total">—</div><div class="stat-label">Despachos</div></div>
+    <div class="stat-card sc2"><div class="stat-icon">📦</div><div class="stat-num" id="s-sacos">—</div><div class="stat-label">Sacos</div></div>
+    <div class="stat-card sc3"><div class="stat-icon">⬆️</div><div class="stat-num" id="s-kgd">—</div><div class="stat-label">KG Desp.</div></div>
+    <div class="stat-card sc4"><div class="stat-icon">⬇️</div><div class="stat-num" id="s-kgv">—</div><div class="stat-label">KG Dev.</div></div>
+    <div class="stat-card sc5"><div class="stat-icon">🔥</div><div class="stat-num" id="s-kgu">—</div><div class="stat-label">KG Usados</div></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">📊 KG Despachados vs Devueltos por Mes</div>
+      <div class="chart-wrap"><canvas id="chart-mensual"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📅 Sacos por Fecha</div>
+      <div class="chart-wrap"><canvas id="chart-sacos"></canvas></div>
+    </div>
+  </div>
+  <div class="charts-grid" style="margin-top:14px">
+    <div class="chart-card">
+      <div class="chart-title">📈 KG Utilizados Acumulados</div>
+      <div class="chart-wrap"><canvas id="chart-acum"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📍 Destinos / Lugares de Pesca</div>
+      <div id="chart-destinos" class="destinos-list"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const FB = {
+  apiKey:"AIzaSyA8Wvcv3MQNYJT-LNm3UBjG4ta1u-OwrGI",authDomain:"lector-qr-25878.firebaseapp.com",
+  projectId:"lector-qr-25878",storageBucket:"lector-qr-25878.firebasestorage.app",
+  messagingSenderId:"8007483133",appId:"1:8007483133:web:60b74409d146ad8a0bc894"
+};
+const fbApp=initializeApp(FB), db=getFirestore(fbApp), auth=getAuth(fbApp);
+const CDESP="metabisulfito_despachos", CUSR="metabisulfito_usuarios";
+let chartM=null, chartS=null, chartA=null;
+
+const t=setTimeout(()=>window.location.href="../index.html",8000);
+onAuthStateChanged(auth, async user=>{
+  clearTimeout(t);
+  if(!user){window.location.href="../index.html";return;}
+  const snap=await getDoc(doc(db,CUSR,user.uid));
+  if(!snap.exists()||snap.data().activo===false||snap.data().rol!=="admin"){
+    await signOut(auth); window.location.href="../index.html"; return;
+  }
+  document.getElementById("h-user").textContent=snap.data().nombre||user.email;
+  await cargarTodo();
+});
+
+window.doLogout=async()=>{await signOut(auth);window.location.href="../index.html";};
+
+window.cargarTodo=async function(){
+  try{
+    const snap=await getDocs(query(collection(db,CDESP),orderBy("createdAt","desc")));
+    const regs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderStats(regs); buildCharts(regs);
+  }catch(e){console.error(e);}
+};
+
+function renderStats(regs){
+  const tkd=regs.reduce((s,r)=>s+(r.cantKg||0),0);
+  const tkv=regs.reduce((s,r)=>s+(r.devKg||0),0);
+  const ts=regs.reduce((s,r)=>s+(r.cantSacos||0),0);
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set("s-total",regs.length);set("s-sacos",ts||"—");
+  set("s-kgd",tkd.toFixed(1)+" kg");set("s-kgv",tkv.toFixed(1)+" kg");
+  set("s-kgu",(tkd-tkv).toFixed(1)+" kg");
+}
+
+function buildCharts(regs){
+  // Mensual
+  const map={};
+  regs.forEach(r=>{
+    if(!r.fechaDespacho)return;
+    const k=r.fechaDespacho.slice(0,7);
+    if(!map[k])map[k]={d:0,v:0};
+    map[k].d+=r.cantKg||0; map[k].v+=r.devKg||0;
+  });
+  const labels=Object.keys(map).sort().slice(-8);
+  const MESES=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  const ctx1=document.getElementById("chart-mensual").getContext("2d");
+  if(chartM)chartM.destroy();
+  chartM=new Chart(ctx1,{type:"bar",data:{
+    labels:labels.map(l=>{const[y,m]=l.split("-");return MESES[parseInt(m)-1]+"/"+y.slice(2);}),
+    datasets:[
+      {label:"KG Despachados",data:labels.map(k=>+map[k].d.toFixed(1)),backgroundColor:"#3a8eff88",borderColor:"#3a8eff",borderWidth:2,borderRadius:6},
+      {label:"KG Devueltos",data:labels.map(k=>+map[k].v.toFixed(1)),backgroundColor:"#00e5a088",borderColor:"#00e5a0",borderWidth:2,borderRadius:6}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#6b7d99",font:{size:10}}}},scales:{x:{ticks:{color:"#6b7d99",font:{size:10}},grid:{color:"#1d2535"}},y:{ticks:{color:"#6b7d99",font:{size:10}},grid:{color:"#1d2535"}}}}
+  });
+
+  // Sacos
+  const mapS={};
+  regs.forEach(r=>{if(!r.fechaDespacho)return;mapS[r.fechaDespacho]=(mapS[r.fechaDespacho]||0)+(r.cantSacos||0);});
+  const lS=Object.keys(mapS).sort().slice(-10);
+  const ctx2=document.getElementById("chart-sacos").getContext("2d");
+  if(chartS)chartS.destroy();
+  chartS=new Chart(ctx2,{type:"line",data:{labels:lS,datasets:[{label:"Sacos",data:lS.map(k=>mapS[k]),fill:true,backgroundColor:"#9b7fff22",borderColor:"#9b7fff",borderWidth:2,tension:.4,pointBackgroundColor:"#9b7fff",pointRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#6b7d99",font:{size:10}}}},scales:{x:{ticks:{color:"#6b7d99",font:{size:9},maxRotation:40},grid:{color:"#1d2535"}},y:{ticks:{color:"#6b7d99",font:{size:10}},grid:{color:"#1d2535"}}}}
+  });
+
+  // Acumulado
+  const sorted=regs.filter(r=>r.fechaDespacho).sort((a,b)=>a.fechaDespacho.localeCompare(b.fechaDespacho));
+  let acum=0; const lA=[],dA=[];
+  sorted.forEach(r=>{acum+=(r.cantKg||0)-(r.devKg||0);lA.push(r.fechaDespacho);dA.push(+acum.toFixed(1));});
+  const ctx3=document.getElementById("chart-acum").getContext("2d");
+  if(chartA)chartA.destroy();
+  chartA=new Chart(ctx3,{type:"line",data:{labels:lA.slice(-30),datasets:[{label:"KG Neto",data:dA.slice(-30),fill:true,backgroundColor:"#ff8f3c22",borderColor:"#ff8f3c",borderWidth:2,tension:.4,pointRadius:2,pointBackgroundColor:"#ff8f3c"}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#6b7d99",font:{size:10}}}},scales:{x:{ticks:{color:"#6b7d99",font:{size:9},maxRotation:40},grid:{color:"#1d2535"}},y:{ticks:{color:"#6b7d99",font:{size:10}},grid:{color:"#1d2535"}}}}
+  });
+
+  // Destinos
+  const dmap={};
+  regs.forEach(r=>{if(r.sitioLabel||r.lugarPesca){const k=r.sitioLabel||r.lugarPesca;dmap[k]=(dmap[k]||0)+1;}});
+  const sorted2=Object.entries(dmap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const max=sorted2[0]?.[1]||1;
+  const wrap=document.getElementById("chart-destinos");
+  wrap.innerHTML=sorted2.length?sorted2.map(([n,c])=>`
+    <div class="destino-row">
+      <div class="destino-name">${n}</div>
+      <div class="destino-bar-wrap"><div class="destino-bar" style="width:${(c/max*100).toFixed(0)}%"></div></div>
+      <div class="destino-count">${c} desp.</div>
+    </div>`).join(""):'<div class="empty" style="padding:20px">Sin datos</div>';
+}
+</script>
+</body>
+</html>
